@@ -1,26 +1,37 @@
 import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import {createBrowserRouter, RouterProvider} from "react-router-dom";
+import ErrorPage from "./app/core/components/Error/ErrorPage";
+import Home from "./app/core/components/Home";
+import RootLayout from "./app/core/components/RootLayout";
+import MessageLayout from "./app/core/components/Messages/MessageLayout";
+import CommunicateBox from "./app/core/components/Messages/CommunicateBox/CommunicateBox";
+
+
+const router = createBrowserRouter([
+    {
+        path: "/",
+        element: <RootLayout/>,
+        errorElement: <ErrorPage/>,
+        children: [
+            {index: true, element: <Home/>},
+
+            {
+                path: "/messages",
+                element: <MessageLayout/>,
+                children: [
+                    {
+                        path: ":id",
+                        element: <CommunicateBox/>
+                    }
+                ]
+            }
+        ]
+    }
+])
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+
+    return <RouterProvider router={router}/>;
 }
 
 export default App;

@@ -1,0 +1,24 @@
+li {
+    padding: 10px 15px;
+    list-style: none;
+    border-radius: 3px
+}
+
+.item:hover {
+    color: red;
+    background: #efefef;
+    cursor: pointer
+}
+
+li.active {
+    background: #efefef
+}
+
+.online {
+    color: #86c541
+}
+
+.offline {
+    color: #e47297
+}
+
