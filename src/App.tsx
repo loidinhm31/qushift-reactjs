@@ -3,7 +3,7 @@ import {createBrowserRouter, RouterProvider} from "react-router-dom";
 import ErrorPage from "./app/core/components/Error/ErrorPage";
 import Home from "./app/core/components/Home";
 import RootLayout from "./app/core/components/RootLayout";
-import MessageLayout from "./app/core/components/Messages/MessageLayout";
+import Communicate from "./app/core/components/Messages/Communicate";
 import CommunicateBox from "./app/core/components/Messages/CommunicateBox/CommunicateBox";
 
 
@@ -16,14 +16,8 @@ const router = createBrowserRouter([
             {index: true, element: <Home/>},
 
             {
-                path: "/messages",
-                element: <MessageLayout/>,
-                children: [
-                    {
-                        path: ":id",
-                        element: <CommunicateBox/>
-                    }
-                ]
+                path: "/communication",
+                element: <Communicate/>,
             }
         ]
     }

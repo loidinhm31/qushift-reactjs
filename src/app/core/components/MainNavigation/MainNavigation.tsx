@@ -17,11 +17,11 @@ function MainNavigation() {
                 </li>
                 <li>
                     <NavLink
-                        to="/messages"
+                        to="/communication"
                         className={({isActive}) => isActive ? classes.active : undefined}
                         end
                     >
-                        Messages
+                        Communication
                     </NavLink>
                 </li>
             </ul>

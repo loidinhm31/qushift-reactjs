@@ -1,63 +1,91 @@
 import classes from "./CommunicateBox.module.css";
 
-import React, {useCallback, useEffect, useState} from "react";
+import React, {useCallback, useContext, useEffect, useState} from "react";
 import {environment} from "../../../../environments/environment";
 import {Message, retrieveMessages} from "../../../util/api";
-import {useParams} from "react-router-dom";
+import {CommunicateCtx} from "../Communicate";
 
 export const CommunicateBox = () => {
-    let {id} = useParams(); // topic id
+    const {communicateProps, setCommunicateProps} = useContext(CommunicateCtx);
 
     const [isLoading, setIsLoading] = useState(true);
-    const [messages, setMessages] = useState<Message[]>([]);
+    let [messages, setMessages] = useState<Message[]>([]);
 
-    let eventSource: EventSource;
+    // Clear messages when topic id change
+    useEffect(() => {
+        console.log("Changed id to " + communicateProps.topicId);
 
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        messages = [];
+        setMessages(messages);
+    }, [communicateProps.topicId])
 
-    listenMessageStream(id);
+    // Get history messages
+    useEffect(() => {
+        console.log(`Getting history for id ${communicateProps.topicId}...`);
+        retrieveMessages(communicateProps.topicId)
+            .then((data) => {
+                // eslint-disable-next-line react-hooks/exhaustive-deps
+                messages = data;
+                setMessages(messages);
+                setIsLoading(false);
+            })
+            .catch((err) => console.log(err));
+    }, [communicateProps.topicId]);
 
+    // Callback for listening the incoming message
     const streamMessage = useCallback((tailMessage: Message) => {
+        console.log(`Updating stream for id ${communicateProps.topicId}...`);
+
         messages.push(tailMessage);
         setMessages([...messages]);
-    }, [messages]);
 
+    }, [communicateProps.topicId, messages]);
+
+    // Control event source to work with SSE for the incoming message
     useEffect(() => {
-        retrieveMessages(id)
-            .then((data) => {
-                setMessages(data);
-                setIsLoading(false);
-            });
+        if (communicateProps.topicId !== "") {
+            console.log(`Opening stream for id ${communicateProps.topicId}...`)
 
-        return () => eventSource.close();
-    }, [id, streamMessage]);
+            const url = `${environment.apiBaseUrl}/messages/stream?topicId=${communicateProps.topicId}`;
 
-    function listenMessageStream(id: string | undefined) {
-        const url = `${environment.apiBaseUrl}/messages/stream?topicId=${id}`;
+            const eventSource = new EventSource(url);
 
-        eventSource = new EventSource(url);
+            eventSource.onopen = (event: any) => console.log("open", event);
 
-        let tailMessage: Message;
+            eventSource.onmessage = (event: any) => {
+                const tailMessage = JSON.parse(event.data);
 
-        eventSource.onopen = (event: any) => console.log("open", event);
-        eventSource.onmessage = (event: any) => {
-            tailMessage = JSON.parse(event.data);
-
-            if (!messages.some((msg: Message) => msg.id === tailMessage.id)) {
-                streamMessage(tailMessage);
+                if (!messages.some((msg: Message) => msg.id === tailMessage.id)) {
+                    streamMessage(tailMessage);
+                }
             }
+            eventSource.onerror = (event: any) => {
+                console.log("error", event);
+                if (event.readyState === EventSource.CLOSED) {
+                    eventSource.close();
+                }
+            };
 
-        }
-        eventSource.onerror = (event: any) => {
-            console.log("error", event);
-            if (event.readyState === EventSource.CLOSED) {
+            return () => {
+                console.log(`Closing stream for id ${communicateProps.topicId}...`);
                 eventSource.close();
-            }
-        };
+            };
+        }
+    }, [communicateProps.topicId])
+
+    const setHoverChat = () => {
+        console.log("box hover...")
+        setCommunicateProps((prop: any) => ({
+            ...prop,
+            sendSignal: true,
+        }));
     }
 
     return (
         <>
-            <div className={classes.chatHistory}>
+            <div className={classes.chatHistory}
+                onMouseEnter={() => setHoverChat()}>
                 {isLoading &&
                     <p>Loading...</p>
                 }
@@ -84,9 +112,7 @@ export const CommunicateBox = () => {
                         </div>
                     </li>
 
-
                     {messages.map((message: Message, index) =>
-
                         <li key={index}>
                             <div className="d-flex flex-row">
                                 <div className="col-8">
