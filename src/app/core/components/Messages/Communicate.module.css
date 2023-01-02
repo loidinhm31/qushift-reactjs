@@ -35,3 +35,7 @@ li.active {
     color: #e47297
 }
 
+.topic {
+    max-height: 980px;
+    overflow-y: scroll;
+}

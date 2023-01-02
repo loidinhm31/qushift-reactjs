@@ -1,6 +1,6 @@
 import classes from "./CommunicateBox.module.css";
 
-import React, {useCallback, useContext, useEffect, useState} from "react";
+import React, {useCallback, useContext, useEffect, useRef, useState} from "react";
 import {environment} from "../../../../environments/environment";
 import {Message, retrieveMessages} from "../../../util/api";
 import {CommunicateCtx} from "../Communicate";
@@ -10,6 +10,8 @@ export const CommunicateBox = () => {
 
     const [isLoading, setIsLoading] = useState(true);
     let [messages, setMessages] = useState<Message[]>([]);
+
+    const boxEndRef = useRef<HTMLDivElement | null>(null);
 
     // Clear messages when topic id change
     useEffect(() => {
@@ -30,6 +32,7 @@ export const CommunicateBox = () => {
                 setMessages(messages);
                 setIsLoading(false);
             })
+            .finally(() => scrollToBottom())
             .catch((err) => console.log(err));
     }, [communicateProps.topicId]);
 
@@ -40,6 +43,7 @@ export const CommunicateBox = () => {
         messages.push(tailMessage);
         setMessages([...messages]);
 
+        scrollToBottom();
     }, [communicateProps.topicId, messages]);
 
     // Control event source to work with SSE for the incoming message
@@ -75,66 +79,70 @@ export const CommunicateBox = () => {
     }, [communicateProps.topicId])
 
     const setHoverChat = () => {
-        console.log("box hover...")
         setCommunicateProps((prop: any) => ({
             ...prop,
             sendSignal: true,
         }));
     }
 
+    const scrollToBottom = () => {
+        boxEndRef.current?.scrollIntoView({behavior: "smooth"})
+    }
+
     return (
         <>
-            <div className={classes.chatHistory}
-                onMouseEnter={() => setHoverChat()}>
+            <div className={classes.box}
+                 onMouseEnter={() => setHoverChat()}>
                 {isLoading &&
                     <p>Loading...</p>
                 }
 
                 <ul className="m-2">
-                    <li>
-                        <div className="d-flex flex-row-reverse">
-                            <div className="col-8">
-                                <div className="text-end">
-                                    <span className="fs-6">
-                                        10:10 AM, Today
-                                    </span>
-                                    {/*<img src="https://bootdey.com/img/Content/avatar/avatar7.png"*/}
-                                    {/*     alt="avatar"/>*/}
-                                </div>
-                                <div className="card">
-                                    <div className="card-body rounded bg-info text-white"> Hi Aiden,
-                                        how are
-                                        you? How is the project coming along?
-                                    </div>
-                                </div>
-
-                            </div>
-                        </div>
-                    </li>
 
                     {messages.map((message: Message, index) =>
                         <li key={index}>
-                            <div className="d-flex flex-row">
-                                <div className="col-8">
-                                    <div className="text-start">
+                            {communicateProps.userId === message.sender &&
+                                <div className="d-flex flex-row-reverse">
+                                    <div className="col-8">
+                                        <div className="text-end">
+                                    <span className="fs-6">
+                                        {message.createdAt}
+                                    </span>
+                                            {/*<img src="https://bootdey.com/img/Content/avatar/avatar7.png"*/}
+                                            {/*     alt="avatar"/>*/}
+                                        </div>
+                                        <div className="card">
+                                            <div className="card-body rounded bg-info text-white">
+                                                {message.content}
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            }
+
+                            {communicateProps.userId !== message.sender &&
+                                <div className="d-flex flex-row">
+                                    <div className="col-8">
+                                        <div className="text-start">
                                         <span className="fs-6">
                                             {message.createdAt}
                                         </span>
-                                    </div>
-                                    <div className={`${classes.other} card`}>
-                                        <div className="card-body rounded bg-subtle">
-                                            {message.content}
                                         </div>
-                                    </div>
+                                        <div className={`${classes.other} card`}>
+                                            <div className="card-body rounded bg-subtle">
+                                                {message.content}
+                                            </div>
+                                        </div>
 
+                                    </div>
                                 </div>
-                            </div>
+                            }
                         </li>
                     )}
                 </ul>
+                <div ref={boxEndRef}/>
             </div>
-
-
         </>
     )
 }

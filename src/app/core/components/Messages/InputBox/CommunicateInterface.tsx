@@ -11,6 +11,7 @@ export interface MemberInterface {
 }
 
 export interface CommunicatePropInterface {
+    userId: string;
     topicId: string;
-    checkSeen: boolean;
+    sendSignal: boolean;
 }

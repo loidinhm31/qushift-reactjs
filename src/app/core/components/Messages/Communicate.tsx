@@ -1,25 +1,21 @@
 import classes from "./Communicate.module.css";
-import React, {createContext, Fragment, useCallback, useEffect, useMemo, useState} from "react";
+import React, {createContext, Fragment, useCallback, useEffect, useMemo, useRef, useState} from "react";
 import InputBox from "./InputBox/InputBox";
 import CommunicateBox from "./CommunicateBox/CommunicateBox";
 import {retrieveTopics} from "../../util/api";
 import {environment} from "../../../environments/environment";
-import {CommunicatePropInterface, MemberInterface, TopicInterface} from "./InputBox/CommunicateContextInterface";
+import {CommunicatePropInterface, MemberInterface, TopicInterface} from "./InputBox/CommunicateInterface";
 
-type CommunicateContextType = {
-    propS: CommunicatePropInterface,
-    setPropS: (prop: CommunicatePropInterface) => void
-}
+export const CommunicateCtx = createContext<any>({});
 
-export const CommunicateCtx = createContext<any>({
-    communicateProps: null,
-    setCommunicateProps: () => {
-    },
-});
 const Communicate = () => {
 
-    const [communicateProps, setCommunicateProps] = useState(
-        {topicId: "", sendSignal: false}
+    const [communicateProps, setCommunicateProps] = useState<CommunicatePropInterface>(
+        {
+            userId: "test-a",
+            topicId: "",
+            sendSignal: false
+        }
     );
 
     const [topics, setTopics] = useState<TopicInterface[]>([]);
@@ -47,7 +43,7 @@ const Communicate = () => {
         console.log("Updating notification for receiver...")
 
         // TODO hard code user value test-a
-        const user = topic.members?.find(member => member.user === "test-a") as MemberInterface;
+        const user = topic.members?.find(member => member.user === communicateProps.userId) as MemberInterface;
 
         if (!user.checkSeen) {
             if (msgMap.has(topic.id)) {
@@ -126,14 +122,15 @@ const Communicate = () => {
                             <div className="row mx-2 my-2">
                                 <Fragment>
                                     <div className="col-sm-3">
-                                        <div id="plist">
-                                            <div className="input-group">
-                                                <div className="input-group-prepend">
-                                                    <span className="input-group-text"><i className="fa fa-search"></i></span>
-                                                </div>
-                                                <input type="text" className="form-control" placeholder="Search..."/>
+                                        <div className="input-group">
+                                            <div className="input-group-prepend">
+                                                <span className="input-group-text"><i
+                                                    className="fa fa-search"></i></span>
                                             </div>
+                                            <input type="text" className="form-control" placeholder="Search..."/>
+                                        </div>
 
+                                        <div className={classes.topic}>
                                             <ul className="list-unstyled mt-2 mb-0">
                                                 {topics.map((topic: TopicInterface, index) =>
                                                     <li key={index}
@@ -165,7 +162,6 @@ const Communicate = () => {
                                                 )
                                                 }
                                             </ul>
-
                                         </div>
                                     </div>
 
