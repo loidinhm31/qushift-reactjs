@@ -47,3 +47,14 @@ export async function sendMessage(inputMessage: InputMessage) {
         throw new Response('Failed to post message.', {status: 500});
     }
 }
+
+export async function sendSignal(topicId: string) {
+    const requestOptions = {
+        method: "POST",
+    }
+
+    const response = await fetch(`${environment.apiBaseUrl}/topics/signal/${topicId}`, requestOptions);
+    if (!response.ok) {
+        throw new Response('Failed to post signal.', {status: 500});
+    }
+}

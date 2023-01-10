@@ -2,7 +2,7 @@ import classes from "./Communicate.module.css";
 import React, {createContext, Fragment, useCallback, useEffect, useMemo, useRef, useState} from "react";
 import InputBox from "./InputBox/InputBox";
 import CommunicateBox from "./CommunicateBox/CommunicateBox";
-import {retrieveTopics} from "../../util/api";
+import {retrieveTopics, sendSignal} from "../../util/api";
 import {environment} from "../../../environments/environment";
 import {CommunicatePropInterface, MemberInterface, TopicInterface} from "./InputBox/CommunicateInterface";
 
@@ -72,7 +72,7 @@ const Communicate = () => {
 
     // Control event source to work with SSE for incoming notify
     useEffect(() => {
-        const url = `${environment.apiBaseUrl}/messages/r/stream/test-a`;
+        const url = `${environment.apiBaseUrl}/topics/stream/${communicateProps.userId}`;
         const eventSource = new EventSource(url);
 
         eventSource.onopen = (event: any) => console.log("open", event);
@@ -100,8 +100,12 @@ const Communicate = () => {
         if (communicateProps.sendSignal) {
             if (msgMap.get(communicateProps.topicId) !== "0" &&
                 msgMap.get(communicateProps.topicId) !== undefined) {
-                // TODO
-                console.log("send signal");
+
+                console.log(`Sending signal for ${communicateProps.topicId}...`);
+                sendSignal(communicateProps.topicId)
+                    .finally(() => {
+                        msgMap.set(communicateProps.topicId, "0");
+                    });
             }
         }
     }, [communicateProps])
