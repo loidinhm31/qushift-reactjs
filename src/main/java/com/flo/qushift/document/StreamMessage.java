@@ -1,25 +1,27 @@
 package com.flo.qushift.document;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.experimental.SuperBuilder;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-
-import java.util.List;
 
 @SuperBuilder
 @Data
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-@Document(collection = "channels")
-public class Channel extends BaseDocument {
-    @Id
+@Document(collection = "stream-messages")
+public class StreamMessage extends BaseDocument {
+
     private String id;
 
-    private String name;
+    private String sender;
 
-    private List<String> members;
+    private String receiver;
+
+    private String content;
+
+    @NonNull
+    private String topicId;
 }

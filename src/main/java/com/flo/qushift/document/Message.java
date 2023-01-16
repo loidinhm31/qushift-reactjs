@@ -24,5 +24,5 @@ public class Message extends BaseDocument {
     private String content;
 
     @NonNull
-    private String channelId;
+    private String topicId;
 }
