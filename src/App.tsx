@@ -4,7 +4,6 @@ import ErrorPage from "./app/core/components/Error/ErrorPage";
 import Home from "./app/core/components/Home";
 import RootLayout from "./app/core/components/RootLayout";
 import Communicate from "./app/core/components/Messages/Communicate";
-import CommunicateBox from "./app/core/components/Messages/CommunicateBox/CommunicateBox";
 
 
 const router = createBrowserRouter([

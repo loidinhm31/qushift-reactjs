@@ -9,7 +9,14 @@ export interface MemberInterface {
     notSeenCount: number;
 }
 export interface CommunicatePropInterface {
-    userId: string;
-    topicId: string;
+    user: UserInterface;
+    topic?: TopicInterface;
     sendSignal: boolean;
+}
+
+export interface UserInterface {
+    id: string;
+    username: string;
+    firstName: string;
+    lastName: string;
 }

@@ -20,7 +20,7 @@ export const CommunicateBox = () => {
 
     // Clear messages when topic id change
     useEffect(() => {
-        console.log("Changed id to " + communicateProps.topicId);
+        console.log("Changed id to " + communicateProps.topic.id);
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
         messages = [];
@@ -31,12 +31,12 @@ export const CommunicateBox = () => {
         setPrevPage(0);
         setWasLastList(false);
 
-    }, [communicateProps.topicId])
+    }, [communicateProps.topic.id])
 
     // Get history messages
     useEffect(() => {
-        console.log(`Getting history for id ${communicateProps.topicId}...${currPage}`);
-        retrieveMessages(communicateProps.topicId, 0)
+        console.log(`Getting history for id ${communicateProps.topic.id}...${currPage}`);
+        retrieveMessages(communicateProps.topic.id, 0)
             .then((data) => {
                 // eslint-disable-next-line react-hooks/exhaustive-deps
                 messages = data;
@@ -46,14 +46,14 @@ export const CommunicateBox = () => {
             .finally(() => scrollToBottom())
             .catch((err) => console.log(err));
 
-    }, [communicateProps.topicId]);
+    }, [communicateProps.topic.id]);
 
     // Pagination when scroll to top
     useEffect(() => {
         console.log(`Updating list, current page is ${currPage}...`);
         if (!wasLastList && prevPage !== currPage) {
             setIsLoading(true);
-            retrieveMessages(communicateProps.topicId, currPage)
+            retrieveMessages(communicateProps.topic.id, currPage)
                 .then((data) => {
                     if (!data.length) {
                         setWasLastList(true)
@@ -72,20 +72,20 @@ export const CommunicateBox = () => {
 
     // Callback for listening the incoming message
     const streamMessage = useCallback((tailMessage: Message) => {
-        console.log(`Updating stream for id ${communicateProps.topicId}...`);
+        console.log(`Updating stream for id ${communicateProps.topic.id}...`);
 
         messages.push(tailMessage);
         setMessages([...messages]);
 
         scrollToBottom();
-    }, [communicateProps.topicId, messages]);
+    }, [communicateProps.topic.id, messages]);
 
     // Control event source to work with SSE for the incoming message
     useEffect(() => {
-        if (communicateProps.topicId !== "") {
-            console.log(`Opening stream for id ${communicateProps.topicId}...`)
+        if (communicateProps.topic.id !== "") {
+            console.log(`Opening stream for id ${communicateProps.topic.id}...`)
 
-            const url = `${environment.apiBaseUrl}/messages/stream?topicId=${communicateProps.topicId}`;
+            const url = `${environment.apiBaseUrl}/messages/stream?topicId=${communicateProps.topic.id}`;
 
             const eventSource = new EventSource(url);
 
@@ -106,11 +106,11 @@ export const CommunicateBox = () => {
             };
 
             return () => {
-                console.log(`Closing stream for id ${communicateProps.topicId}...`);
+                console.log(`Closing stream for id ${communicateProps.topic.id}...`);
                 eventSource.close();
             };
         }
-    }, [communicateProps.topicId])
+    }, [communicateProps.topic.id])
 
     const setHoverChat = () => {
         setCommunicateProps((prop: any) => ({
@@ -148,7 +148,7 @@ export const CommunicateBox = () => {
 
                     {messages.map((message: Message, index) =>
                         <li key={index}>
-                            {communicateProps.userId === message.sender &&
+                            {communicateProps.user.id === message.sender &&
                                 <div className="d-flex flex-row-reverse">
                                     <div className="col-8">
                                         <div className="text-end">
@@ -168,7 +168,7 @@ export const CommunicateBox = () => {
                                 </div>
                             }
 
-                            {communicateProps.userId !== message.sender &&
+                            {communicateProps.user.id !== message.sender &&
                                 <div className="d-flex flex-row">
                                     <div className="col-8">
                                         <div className="text-start">

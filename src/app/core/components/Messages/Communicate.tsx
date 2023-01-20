@@ -1,19 +1,26 @@
 import classes from "./Communicate.module.css";
-import React, {createContext, Fragment, useCallback, useEffect, useMemo, useRef, useState} from "react";
+import React, {createContext, Fragment, useCallback, useEffect, useMemo, useState} from "react";
 import InputBox from "./InputBox/InputBox";
 import CommunicateBox from "./CommunicateBox/CommunicateBox";
 import {retrieveTopics, sendSignal} from "../../util/api";
 import {environment} from "../../../environments/environment";
-import {CommunicatePropInterface, MemberInterface, TopicInterface} from "./InputBox/CommunicateInterface";
+import {CommunicatePropInterface, MemberInterface, TopicInterface, UserInterface} from "./CommunicateInterface";
 
 export const CommunicateCtx = createContext<any>({});
 
 const Communicate = () => {
+    // TODO
+    const fakeUser: UserInterface = {
+        id: "test-a",
+        username: "test",
+        firstName: "A",
+        lastName: "B",
+    }
 
     const [communicateProps, setCommunicateProps] = useState<CommunicatePropInterface>(
         {
-            userId: "test-a",
-            topicId: "",
+            user: fakeUser,
+            topic: {id: "", name: ""},
             sendSignal: false
         }
     );
@@ -43,7 +50,7 @@ const Communicate = () => {
         console.log("Updating notification for receiver...")
 
         // TODO hard code user value test-a
-        const user = topic.members?.find(member => member.user === communicateProps.userId) as MemberInterface;
+        const user = topic.members?.find(member => member.user === communicateProps.user.id) as MemberInterface;
 
         if (!user.checkSeen) {
             if (msgMap.has(topic.id)) {
@@ -72,7 +79,7 @@ const Communicate = () => {
 
     // Control event source to work with SSE for incoming notify
     useEffect(() => {
-        const url = `${environment.apiBaseUrl}/topics/stream/${communicateProps.userId}`;
+        const url = `${environment.apiBaseUrl}/topics/stream/${communicateProps.user.id}`;
         const eventSource = new EventSource(url);
 
         eventSource.onopen = (event: any) => console.log("open", event);
@@ -98,22 +105,24 @@ const Communicate = () => {
     // Send seen signal to server
     useEffect(() => {
         if (communicateProps.sendSignal) {
-            if (msgMap.get(communicateProps.topicId) !== "0" &&
-                msgMap.get(communicateProps.topicId) !== undefined) {
+            if (msgMap.get(communicateProps.topic?.id as string) !== "0" &&
+                msgMap.get(communicateProps.topic?.id as string) !== undefined) {
 
-                console.log(`Sending signal for ${communicateProps.topicId}...`);
-                sendSignal(communicateProps.topicId)
+                console.log(`Sending signal for ${communicateProps.topic?.id}...`);
+                sendSignal(communicateProps.topic?.id)
                     .finally(() => {
-                        msgMap.set(communicateProps.topicId, "0");
+                        msgMap.set(communicateProps.topic?.id as string, "0");
                     });
             }
         }
     }, [communicateProps])
 
     const setTopic = (id: string) => {
+        const currTopic = topics.find(t => t.id === id);
+
         setCommunicateProps((prop) => ({
             ...prop,
-            topicId: id,
+            topic: currTopic,
         }));
     }
 
@@ -138,7 +147,7 @@ const Communicate = () => {
                                             <ul className="list-unstyled mt-2 mb-0">
                                                 {topics.map((topic: TopicInterface, index) =>
                                                     <li key={index}
-                                                        className={`${classes.item} ${communicateProps.topicId === topic.id ? `${classes.active}` : undefined}`}>
+                                                        className={`${classes.item} ${communicateProps.topic?.id === topic.id ? `${classes.active}` : undefined}`}>
                                                         {/*<img src="https://bootdey.com/img/Content/avatar/avatar1.png" alt="avatar"/>*/}
 
                                                         <div className={classes.about}
@@ -179,7 +188,9 @@ const Communicate = () => {
                                                         {/*     alt="avatar"/>*/}
                                                     </a>
                                                     <div className={classes.chatAbout}>
-                                                        <h6 className="fw-bold mb-2">Aiden Chavez</h6>
+                                                        <h6 className="fw-bold mb-2">
+                                                            {communicateProps.topic?.name}
+                                                        </h6>
                                                         <small>Last seen: 2 hours ago</small>
                                                     </div>
                                                 </div>

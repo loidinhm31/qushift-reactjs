@@ -48,7 +48,7 @@ export async function sendMessage(inputMessage: InputMessage) {
     }
 }
 
-export async function sendSignal(topicId: string) {
+export async function sendSignal(topicId: string | undefined) {
     const requestOptions = {
         method: "POST",
     }

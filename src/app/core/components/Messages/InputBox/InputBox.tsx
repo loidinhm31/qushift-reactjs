@@ -27,8 +27,8 @@ const InputBox = () => {
                 {
                     content: msg,
                     receiver: "test-b", // TODO
-                    sender: communicateProps.userId,   // TODO
-                    topicId: communicateProps.topicId,
+                    sender: communicateProps.user.id,  // TODO
+                    topicId: communicateProps.topic.id,
                 }
             ).finally(() => {
                 setComplete(true);
