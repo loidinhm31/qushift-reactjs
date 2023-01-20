@@ -174,7 +174,7 @@ const Communicate = () => {
                                             <div className="row">
                                                 <div className="col-lg-6">
                                                     <a href="src/app/core/components#!" data-toggle="modal"
-                                                       data-target="#view_info">
+                                                        data-target="#view_info">
                                                         {/*<img src="https://bootdey.com/img/Content/avatar/avatar2.png"*/}
                                                         {/*     alt="avatar"/>*/}
                                                     </a>
@@ -185,16 +185,16 @@ const Communicate = () => {
                                                 </div>
                                                 <div className="col-lg-6 hidden-sm text-end">
                                                     <a href="src/app/core/components#!"
-                                                       className="btn btn-outline-secondary"><i
+                                                        className="btn btn-outline-secondary"><i
                                                         className="fa fa-camera"></i></a>
                                                     <a href="src/app/core/components#!"
-                                                       className="btn btn-outline-primary"><i
+                                                        className="btn btn-outline-primary"><i
                                                         className="fa fa-image"></i></a>
                                                     <a href="src/app/core/components#!"
-                                                       className="btn btn-outline-info"><i
+                                                        className="btn btn-outline-info"><i
                                                         className="fa fa-cogs"></i></a>
                                                     <a href="src/app/core/components#!"
-                                                       className="btn btn-outline-warning"><i
+                                                        className="btn btn-outline-warning"><i
                                                         className="fa fa-question"></i></a>
                                                 </div>
                                             </div>
@@ -219,7 +219,7 @@ const Communicate = () => {
             </div>
 
         </>
-    );
+        );
 }
 
 export default Communicate;
