@@ -13,6 +13,11 @@ export const CommunicateBox = () => {
 
     const boxEndRef = useRef<HTMLDivElement | null>(null);
 
+    const listInnerRef = useRef<HTMLDivElement | null>(null);
+    const [currPage, setCurrPage] = useState(0); // storing current page number
+    const [prevPage, setPrevPage] = useState(0); // storing prev page number
+    const [wasLastList, setWasLastList] = useState(false); // setting a flag to know the last list
+
     // Clear messages when topic id change
     useEffect(() => {
         console.log("Changed id to " + communicateProps.topicId);
@@ -20,12 +25,18 @@ export const CommunicateBox = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
         messages = [];
         setMessages(messages);
+
+        // Reset page to 0
+        setCurrPage(0);
+        setPrevPage(0);
+        setWasLastList(false);
+
     }, [communicateProps.topicId])
 
     // Get history messages
     useEffect(() => {
-        console.log(`Getting history for id ${communicateProps.topicId}...`);
-        retrieveMessages(communicateProps.topicId)
+        console.log(`Getting history for id ${communicateProps.topicId}...${currPage}`);
+        retrieveMessages(communicateProps.topicId, 0)
             .then((data) => {
                 // eslint-disable-next-line react-hooks/exhaustive-deps
                 messages = data;
@@ -34,7 +45,30 @@ export const CommunicateBox = () => {
             })
             .finally(() => scrollToBottom())
             .catch((err) => console.log(err));
+
     }, [communicateProps.topicId]);
+
+    // Pagination when scroll to top
+    useEffect(() => {
+        console.log(`Updating list, current page is ${currPage}...`);
+        if (!wasLastList && prevPage !== currPage) {
+            setIsLoading(true);
+            retrieveMessages(communicateProps.topicId, currPage)
+                .then((data) => {
+                    if (!data.length) {
+                        setWasLastList(true)
+                    } else {
+                        setPrevPage(currPage);
+                        setMessages([...data, ...messages]);
+                    }
+                })
+                .catch((err) => console.log(err))
+                .finally(() => {
+                    setIsLoading(false);
+                    listInnerRef.current?.scrollTo({top: 700, left: 0, behavior: 'smooth'})
+                });
+        }
+    }, [currPage])
 
     // Callback for listening the incoming message
     const streamMessage = useCallback((tailMessage: Message) => {
@@ -89,13 +123,26 @@ export const CommunicateBox = () => {
         boxEndRef.current?.scrollIntoView({behavior: "smooth"})
     }
 
+    const onScrollToTop = () => {
+        if (listInnerRef.current) {
+            const {scrollTop} = listInnerRef.current;
+            if (scrollTop === 0) {
+                setCurrPage(currPage + 1);
+            }
+        }
+    };
+
     return (
         <>
             <div className={classes.box}
-                 onMouseEnter={() => setHoverChat()}>
+                 onMouseEnter={() => setHoverChat()}
+                 onScroll={onScrollToTop}
+                 ref={listInnerRef}
+            >
                 {isLoading &&
                     <p>Loading...</p>
                 }
+
 
                 <ul className="m-2">
 

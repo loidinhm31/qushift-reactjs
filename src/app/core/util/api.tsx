@@ -24,8 +24,8 @@ export async function retrieveTopics() {
     return response.json();
 }
 
-export async function retrieveMessages(id: string | undefined) {
-    const response = await fetch(`${environment.apiBaseUrl}/messages?topicId=${id}&start=0&size=10`);
+export async function retrieveMessages(id: string | undefined, start: number) {
+    const response = await fetch(`${environment.apiBaseUrl}/messages?topicId=${id}&start=${start}&size=10`);
     if (!response.ok) {
         throw new Response('Failed to fetch messages.', {status: 500});
     }
