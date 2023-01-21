@@ -8,7 +8,6 @@ import com.google.gson.GsonBuilder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ByteArrayResource;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.scheduler.Schedulers;
@@ -62,7 +61,7 @@ public class BackupService {
     public ByteArrayResource exportBackupFile(String locFile) {
         try (RandomAccessFile raf = new RandomAccessFile(locFile, "rwd");
              FileChannel binChannel = raf.getChannel();
-             ByteArrayOutputStream baOut  = new ByteArrayOutputStream()) {
+             ByteArrayOutputStream baOut = new ByteArrayOutputStream()) {
 
             int bufferSize = 1024;
             if (bufferSize > binChannel.size()) {

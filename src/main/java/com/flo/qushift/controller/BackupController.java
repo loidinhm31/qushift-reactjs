@@ -20,8 +20,8 @@ public class BackupController {
 
     @GetMapping("/writer")
     public ResponseEntity<String> writeFile(@RequestParam String topicId) {
-       String locFile = backupService.writeBackupFile(topicId);
-       return ResponseEntity.ok(locFile);
+        String locFile = backupService.writeBackupFile(topicId);
+        return ResponseEntity.ok(locFile);
     }
 
     @GetMapping("/reader")

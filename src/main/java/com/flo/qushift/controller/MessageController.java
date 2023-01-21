@@ -3,7 +3,6 @@ package com.flo.qushift.controller;
 
 import com.flo.qushift.document.Message;
 import com.flo.qushift.document.StreamMessage;
-import com.flo.qushift.document.Topic;
 import com.flo.qushift.dto.MessageDto;
 import com.flo.qushift.service.MessageService;
 import lombok.RequiredArgsConstructor;

@@ -4,7 +4,6 @@ import com.flo.qushift.document.Message;
 import com.flo.qushift.document.Topic;
 import com.flo.qushift.dto.TopicDto;
 import com.flo.qushift.repository.MessageStreamRepository;
-import com.flo.qushift.repository.ReactiveMessageRepository;
 import com.flo.qushift.repository.ReactiveTopicRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
