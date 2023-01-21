@@ -1,0 +1,12 @@
+spring:
+  data:
+    mongodb:
+      uri: mongodb://mongodb:mongodbpw@localhost:27017/?readPreference=primary
+      database: qushift
+
+logging:
+  level:
+    org:
+      springframework:
+          web: DEBUG
+#        hibernate: INFO
