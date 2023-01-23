@@ -1,0 +1,142 @@
+import { Badge, Box, Button, CircularProgress, List, ListItem, Text } from "@chakra-ui/react";
+import React, { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/router";
+import useSWRImmutable from "swr/immutable";
+import { get, sendSeenSignal } from "../../lib/api";
+import { environment } from "../../environments/environment";
+import { Member, Topic } from "../../types/Conversation";
+
+interface TopicProps {
+	currTopicId?: string;
+	sendSignal: boolean;
+}
+
+export function Topic({currTopicId, sendSignal}: TopicProps) {
+	const router = useRouter();
+
+	const goToTopic = useCallback((topicId: string) =>  {
+		router.push(`/messages/${topicId}`);
+	}, [router]);
+
+	const [msgMap, setMsgMap] = useState<Map<string, string>>(new Map());
+	const [isUpdate, setUpdate] = useState(false);
+
+	// TODO hard code user value test-a
+	const fakeUserId = "test-a";
+
+	// Get all topics
+	const { data: topics } = useSWRImmutable("../api/messages", get, { revalidateOnMount: true });
+
+	// Callback for listening the incoming notify
+	const streamNotification = useCallback((topic: Topic) => {
+		console.log(`Updating notification for receiver on topic ${topic.id}...`)
+
+		const user = topic.members?.find(member => member.user === fakeUserId) as Member;
+
+		if (!user.checkSeen) {
+			if (msgMap.has(topic.id)) {
+				const countSeen = user.notSeenCount;
+
+				if (countSeen > 99) {
+					msgMap.set(topic.id, "99+");
+				} else {
+					msgMap.set(topic.id, countSeen.toString());
+				}
+			} else {
+				msgMap.set(topic.id, user.notSeenCount.toString());
+			}
+		} else {
+			msgMap.set(topic.id, "0");
+		}
+
+		setMsgMap(msgMap);
+		setUpdate(true);
+	}, [msgMap]);
+
+	// Set update notify for each topic in map
+	useEffect(() => {
+		setUpdate(false);
+	}, [isUpdate]);
+
+	// Control event source to work with SSE for incoming notify
+	useEffect(() => {
+		const url = `${environment.API_BASE_URL}/topics/stream/${fakeUserId}`;
+		const eventSource = new EventSource(url);
+
+		eventSource.onopen = (event: any) => console.log("open", event);
+
+		eventSource.onmessage = (event: any) => {
+			const topic: Topic = JSON.parse(event.data);
+			streamNotification(topic);
+		}
+
+		eventSource.onerror = (event: any) => {
+			console.log("error", event);
+			if (event.readyState === EventSource.CLOSED) {
+				eventSource.close();
+			}
+		};
+
+		return () => {
+			console.log(`Closing stream for receiver...`);
+			eventSource.close();
+		};
+	}, [])
+
+	// Send seen signal to server
+	useEffect(() => {
+		if (sendSignal) {
+			if (msgMap.get(currTopicId) !== "0" &&
+				msgMap.get(currTopicId) !== undefined) {
+
+				console.log(`Sending signal for ${currTopicId}...`);
+				sendSeenSignal(currTopicId)
+					.finally(() => {
+						msgMap.set(currTopicId as string, "0");
+					});
+			}
+		}
+	}, [sendSignal])
+
+	if (!topics) {
+		return <CircularProgress isIndeterminate />;
+	}
+
+	return (
+		<Box
+			overflowY="auto" height="700px"
+			className="overflow-y-auto p-3 w-full">
+			<List className="grid grid-cols-3 col-span-3 sm:flex sm:flex-col gap-2">
+				{topics.map((item, itemIndex) => (
+					<ListItem
+						onClick={() => goToTopic(item.id)}
+						key={`${item.name}-${itemIndex}`}
+						style={{ textDecoration: "none" }}>
+
+						<Button
+							justifyContent={["center", "center", "center", "left"]}
+							gap="3"
+							size="lg"
+							width="full"
+							bg={currTopicId === item.id ? "blue.500" : null}
+							_hover={currTopicId === item.id ? { bg: "blue.600" } : null}
+						>
+							<Text
+								fontWeight="normal"
+								color={currTopicId === item.id ? "white" : null}
+								className="hidden lg:block"
+							>
+								{item.name}
+								{msgMap.get(item.id) !== "0" &&
+                                    <Badge ml="1" fontSize="0.9em" colorScheme="red">
+										{msgMap.get(item.id)}
+                                    </Badge>
+								}
+							</Text>
+						</Button>
+					</ListItem>
+				))}
+			</List>
+		</Box>
+	)
+}

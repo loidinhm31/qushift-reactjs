@@ -1,0 +1,8 @@
+{
+  "title": "QuShift",
+  "about": "About",
+  "connect": "Connect",
+  "dashboard": "Dashboard",
+  "account_settings": "Account Settings",
+  "last_updated_at": "Last updated at: {{val, datetime}}"
+}
