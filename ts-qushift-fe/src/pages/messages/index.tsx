@@ -1,4 +1,4 @@
-import { Box, CircularProgress, HStack, useColorModeValue } from "@chakra-ui/react";
+import { Box, HStack, useColorModeValue } from "@chakra-ui/react";
 import Head from "next/head";
 import { getDashboardLayout } from "src/components/Layout";
 import { get } from "../../lib/api";
@@ -11,9 +11,6 @@ export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_
 const Messages = () => {
 	const boxBgColor = useColorModeValue("white", "gray.800");
 	const boxAccentColor = useColorModeValue("gray.200", "gray.900");
-
-	// Get all topics
-	const { data: topics } = useSWRImmutable("api/messages", get, { revalidateOnMount: true });
 
 	return (
 		<>

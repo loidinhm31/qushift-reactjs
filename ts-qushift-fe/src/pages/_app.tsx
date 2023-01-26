@@ -6,17 +6,28 @@ import { getDefaultLayout, NextPageWithLayout } from "src/components/Layout";
 
 import nextI18NextConfig from "../../next-i18next.config.js";
 import { Chakra, getServerSideProps } from "../styles/Chakra";
+import { SessionProvider } from "next-auth/react";
+import { SWRConfig, SWRConfiguration } from "swr";
 
 type AppPropsWithLayout = AppProps & {
 	Component: NextPageWithLayout;
 };
 
-function MyApp({ Component, pageProps: { cookies, ...pageProps } }: AppPropsWithLayout) {
+const swrConfig: SWRConfiguration = {
+	revalidateOnFocus: false,
+	revalidateOnMount: true,
+};
+
+function MyApp({ Component, pageProps: { session, cookies, ...pageProps } }: AppPropsWithLayout) {
 	const getLayout = Component.getLayout ?? getDefaultLayout;
 	const page = getLayout(<Component {...pageProps} />);
 	return (
 		<Chakra cookies={cookies}>
-			{page}
+			<SWRConfig value={swrConfig}>
+				<SessionProvider session={session}>
+					{page}
+				</SessionProvider>
+			</SWRConfig>
 		</Chakra>
 	);
 }

@@ -1,6 +1,5 @@
 import { Avatar, Box, HStack, useBreakpointValue, useColorModeValue } from "@chakra-ui/react";
-import { useRouter } from "next/router";
-import { useCallback, useMemo } from "react";
+import { useMemo } from "react";
 import { Message } from "../../types/Conversation";
 
 interface MessageTableEntryProps {
