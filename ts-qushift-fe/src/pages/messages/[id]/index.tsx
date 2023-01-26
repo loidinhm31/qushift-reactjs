@@ -2,17 +2,15 @@ import { Box, CircularProgress, Grid, HStack, useColorModeValue } from "@chakra-
 import Head from "next/head";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { getDashboardLayout } from "src/components/Layout";
-import useSWRImmutable from "swr/immutable";
 import { Message } from "../../../types/Conversation";
 import { Topic } from "../../../components/Messages/Topic";
-import { get, retrieveMessages } from "../../../lib/api";
 import { MessageTable } from "src/components/Messages/MessageTable";
 import { MessageLoading } from "../../../components/Messages/MessageLoading";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { InputBox } from "../../../components/Messages/InputBox";
-import { environment } from "../../../environments/environment";
+import { get } from "../../../lib/api";
 
-const MessageDetail = ({ id }: { id: string }) => {
+const MessageDetail = ({ id, apiBaseUrl }: { id: string, apiBaseUrl: string }) => {
 	const boxBgColor = useColorModeValue("white", "gray.800");
 	const boxAccentColor = useColorModeValue("gray.200", "gray.900");
 
@@ -30,6 +28,8 @@ const MessageDetail = ({ id }: { id: string }) => {
 
 	// Clear messages when topic id change
 	useEffect(() => {
+		console.log('var ' + apiBaseUrl);
+
 		console.log("Changed id to " + id);
 
 		messages = [];
@@ -44,7 +44,8 @@ const MessageDetail = ({ id }: { id: string }) => {
 	// Get history messages
 	useEffect(() => {
 		console.log(`Getting history for id ${id}...${currPage}`);
-		retrieveMessages(id, 0)
+
+		get(`${apiBaseUrl}/messages?topicId=${id}&start=0&size=10`)
 			.then((data) => {
 				setMessages(data);
 				setIsLoading(false);
@@ -59,7 +60,8 @@ const MessageDetail = ({ id }: { id: string }) => {
 		console.log(`Updating list, current page is ${currPage}...`);
 		if (!wasLastList && prevPage !== currPage) {
 			setIsLoading(true);
-			retrieveMessages(id, currPage)
+
+			get(`${apiBaseUrl}/messages?topicId=${id}&start=${currPage}&size=10`)
 				.then((data) => {
 					if (!data.length) {
 						setWasLastList(true)
@@ -89,7 +91,7 @@ const MessageDetail = ({ id }: { id: string }) => {
 	useEffect(() => {
 		console.log(`Opening stream for id ${id}...`)
 
-		const url = `${environment.API_BASE_URL}/messages/stream?topicId=${id}`;
+		const url = `${apiBaseUrl}/messages/stream?topicId=${id}`;
 
 		const eventSource = new EventSource(url);
 
@@ -145,7 +147,7 @@ const MessageDetail = ({ id }: { id: string }) => {
 					 dropShadow={boxAccentColor}
 					 borderRadius="xl"
 					 className="p-4 shadow">
-					<Topic currTopicId={id} sendSignal={sendSignal} />
+					<Topic apiBaseUrl={apiBaseUrl} currTopicId={id} sendSignal={sendSignal} />
 				</Box>
 				<Box w="800px">
 					{isLoading &&
@@ -179,6 +181,7 @@ MessageDetail.getLayout = (page) => getDashboardLayout(page);
 export const getServerSideProps = async ({ locale, query }) => ({
 	props: {
 		id: query.id,
+		apiBaseUrl: process.env.API_BASE_URL,
 		...(await serverSideTranslations(locale, ["index", "common"]))
 	}
 });

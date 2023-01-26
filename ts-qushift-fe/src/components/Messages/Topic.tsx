@@ -2,16 +2,17 @@ import { Badge, Box, Button, CircularProgress, List, ListItem, Text } from "@cha
 import React, { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import useSWRImmutable from "swr/immutable";
-import { get, sendSeenSignal } from "../../lib/api";
-import { environment } from "../../environments/environment";
+import { get, post } from "../../lib/api";
 import { Member, Topic } from "../../types/Conversation";
+import useSWRMutation from "swr/mutation";
 
 interface TopicProps {
+	apiBaseUrl: string;
 	currTopicId?: string;
 	sendSignal: boolean;
 }
 
-export function Topic({currTopicId, sendSignal}: TopicProps) {
+export function Topic({apiBaseUrl, currTopicId, sendSignal}: TopicProps) {
 	const router = useRouter();
 
 	const goToTopic = useCallback((topicId: string) =>  {
@@ -26,6 +27,9 @@ export function Topic({currTopicId, sendSignal}: TopicProps) {
 
 	// Get all topics
 	const { data: topics } = useSWRImmutable("../api/messages", get, { revalidateOnMount: true });
+
+	const { trigger } = useSWRMutation("/api/messages/send_signal", post)
+
 
 	// Callback for listening the incoming notify
 	const streamNotification = useCallback((topic: Topic) => {
@@ -60,7 +64,7 @@ export function Topic({currTopicId, sendSignal}: TopicProps) {
 
 	// Control event source to work with SSE for incoming notify
 	useEffect(() => {
-		const url = `${environment.API_BASE_URL}/topics/stream/${fakeUserId}`;
+		const url = `${apiBaseUrl}/topics/stream/${fakeUserId}`;
 		const eventSource = new EventSource(url);
 
 		eventSource.onopen = (event: any) => console.log("open", event);
@@ -90,14 +94,14 @@ export function Topic({currTopicId, sendSignal}: TopicProps) {
 				msgMap.get(currTopicId) !== undefined) {
 
 				console.log(`Sending signal for ${currTopicId}...`);
-				sendSeenSignal(currTopicId)
+
+				trigger({ currTopicId })
 					.finally(() => {
-						msgMap.set(currTopicId as string, "0");
-					});
+					msgMap.set(currTopicId as string, "0");
+				});
 			}
 		}
 	}, [sendSignal])
-
 	if (!topics) {
 		return <CircularProgress isIndeterminate />;
 	}

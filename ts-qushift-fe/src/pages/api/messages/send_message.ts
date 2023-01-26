@@ -1,5 +1,3 @@
-import { environment } from "../../../environments/environment";
-
 const handler = async (req, res) => {
 	const data = req.body;
 
@@ -12,7 +10,7 @@ const handler = async (req, res) => {
 		body: JSON.stringify(data),
 	}
 
-	const response = await fetch(`${environment.API_BASE_URL}/messages`, requestOptions);
+	const response = await fetch(`${process.env.API_BASE_URL}/messages`, requestOptions);
 
 	res.status(200).json({});
 };

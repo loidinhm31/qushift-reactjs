@@ -1,14 +1,11 @@
 import { Box, HStack, useColorModeValue } from "@chakra-ui/react";
 import Head from "next/head";
 import { getDashboardLayout } from "src/components/Layout";
-import { get } from "../../lib/api";
-import useSWRImmutable from "swr/immutable";
 import { Topic } from "../../components/Messages/Topic";
 import React from "react";
+import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 
-export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_props";
-
-const Messages = () => {
+const Messages = ({ apiBaseUrl }: { apiBaseUrl: string }) => {
 	const boxBgColor = useColorModeValue("white", "gray.800");
 	const boxAccentColor = useColorModeValue("gray.200", "gray.900");
 
@@ -26,7 +23,7 @@ const Messages = () => {
 					 dropShadow={boxAccentColor}
 					 borderRadius="xl"
 					 className="p-4 shadow">
-					<Topic sendSignal={false}/>
+					<Topic apiBaseUrl={apiBaseUrl} sendSignal={false}/>
 				</Box>
 				<Box w="800px">
 
@@ -37,5 +34,12 @@ const Messages = () => {
 };
 
 Messages.getLayout = getDashboardLayout;
+
+export const getServerSideProps = async ({ locale }) => ({
+	props: {
+		apiBaseUrl: process.env.API_BASE_URL,
+		...(await serverSideTranslations(locale, ["index", "common"]))
+	}
+});
 
 export default Messages;

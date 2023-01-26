@@ -1,5 +1,4 @@
 import axios from "axios";
-import { environment } from "../environments/environment";
 
 export interface Message {
 	createdAt: string;
@@ -40,46 +39,3 @@ api.interceptors.response.use(
 );
 
 export default api;
-
-export async function retrieveTopics() {
-    const response = await fetch(`${environment.API_BASE_URL}/topics?userId=test-a&start=0&size=5`);
-    if (!response.ok) {
-        throw new Response('Failed to fetch topics.', {status: 500});
-    }
-    return response.json();
-}
-
-export async function retrieveMessages(id: string | undefined, start: number) {
-    const response = await fetch(`${environment.API_BASE_URL}/messages?topicId=${id}&start=${start}&size=10`);
-    if (!response.ok) {
-		throw new Response("Failed to fetch topics.", { status: 500 });
-    }
-    return response.json();
-}
-
-export async function sendMessage(inputMessage: InputMessage) {
-    const headers = new Headers();
-    headers.append("Content-Type", "application/json");
-
-    const requestOptions = {
-        method: "POST",
-        headers: headers,
-        body: JSON.stringify(inputMessage),
-    }
-
-    const response = await fetch(`${environment.API_BASE_URL}/messages`, requestOptions);
-    if (!response.ok) {
-        throw new Response('Failed to post message.', {status: 500});
-    }
-}
-
-export async function sendSeenSignal(topicId: string | undefined) {
-    const requestOptions = {
-        method: "POST",
-    }
-
-    const response = await fetch(`${environment.API_BASE_URL}/topics/signal/${topicId}`, requestOptions);
-    if (!response.ok) {
-        throw new Response('Failed to post signal.', {status: 500});
-    }
-}
