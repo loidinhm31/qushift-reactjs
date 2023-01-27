@@ -4,6 +4,7 @@ import { Input } from "@chakra-ui/input";
 import { FiSend } from "react-icons/fi";
 import { Box, HStack } from "@chakra-ui/react";
 import useSWRMutation from "swr/mutation";
+import { useSession } from "next-auth/react";
 
 interface TopicProps {
     currTopicId: string;
@@ -12,6 +13,8 @@ interface TopicProps {
 export function InputBox({ currTopicId }: TopicProps) {
     const [msg, setMsg] = useState("");
 
+    const { data: session } = useSession();
+
     const { trigger } = useSWRMutation("/api/messages/send_message", post)
 
     const handleSubmit = () => {
@@ -19,8 +22,8 @@ export function InputBox({ currTopicId }: TopicProps) {
             const data = {
                 content: msg,
                 receiver: "test-b", // TODO
-                sender: "test-a",  // TODO
-                topicId: currTopicId
+                sender: session.user.id,
+                topicId: currTopicId,
             }
             trigger(data).finally(() => setMsg(""));
         }

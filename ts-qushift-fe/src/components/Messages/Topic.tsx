@@ -5,6 +5,7 @@ import useSWRImmutable from "swr/immutable";
 import { get, post } from "../../lib/api";
 import { Member, Topic } from "../../types/Conversation";
 import useSWRMutation from "swr/mutation";
+import { useSession } from "next-auth/react";
 
 interface TopicProps {
 	apiBaseUrl: string;
@@ -15,6 +16,8 @@ interface TopicProps {
 export function Topic({apiBaseUrl, currTopicId, sendSignal}: TopicProps) {
 	const router = useRouter();
 
+	const { data: session } = useSession();
+
 	const goToTopic = useCallback((topicId: string) =>  {
 		router.push(`/messages/${topicId}`);
 	}, [router]);
@@ -22,11 +25,8 @@ export function Topic({apiBaseUrl, currTopicId, sendSignal}: TopicProps) {
 	const [msgMap, setMsgMap] = useState<Map<string, string>>(new Map());
 	const [isUpdate, setUpdate] = useState(false);
 
-	// TODO hard code user value test-a
-	const fakeUserId = "test-a";
-
 	// Get all topics
-	const { data: topics } = useSWRImmutable("../api/messages", get, { revalidateOnMount: true });
+	const { data: topics } = useSWRImmutable(`../api/messages/?user=${session.user.id}`, get, { revalidateOnMount: true });
 
 	const { trigger } = useSWRMutation("/api/messages/send_signal", post)
 
@@ -35,7 +35,7 @@ export function Topic({apiBaseUrl, currTopicId, sendSignal}: TopicProps) {
 	const streamNotification = useCallback((topic: Topic) => {
 		console.log(`Updating notification for receiver on topic ${topic.id}...`)
 
-		const user = topic.members?.find(member => member.user === fakeUserId) as Member;
+		const user = topic.members?.find(member => member.user === session.user.id) as Member;
 
 		if (!user.checkSeen) {
 			if (msgMap.has(topic.id)) {
@@ -64,7 +64,7 @@ export function Topic({apiBaseUrl, currTopicId, sendSignal}: TopicProps) {
 
 	// Control event source to work with SSE for incoming notify
 	useEffect(() => {
-		const url = `${apiBaseUrl}/topics/stream/${fakeUserId}`;
+		const url = `${apiBaseUrl}/topics/stream/${session.user.id}`;
 		const eventSource = new EventSource(url);
 
 		eventSource.onopen = (event: any) => console.log("open", event);

@@ -9,6 +9,7 @@ import { MessageLoading } from "../../../components/Messages/MessageLoading";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { InputBox } from "../../../components/Messages/InputBox";
 import { get } from "../../../lib/api";
+import { useSession } from "next-auth/react";
 
 const MessageDetail = ({ id, apiBaseUrl }: { id: string, apiBaseUrl: string }) => {
 	const boxBgColor = useColorModeValue("white", "gray.800");
@@ -25,6 +26,12 @@ const MessageDetail = ({ id, apiBaseUrl }: { id: string, apiBaseUrl: string }) =
 	const [wasLastList, setWasLastList] = useState(false); // setting a flag to know the last list
 
 	const [sendSignal, setSendSignal] = useState(false);
+
+	const { data: session } = useSession();
+
+	if (!session) {
+		return;
+	}
 
 	// Clear messages when topic id change
 	useEffect(() => {
