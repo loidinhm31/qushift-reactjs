@@ -16,7 +16,7 @@ const MessageDetail = ({ id, apiBaseUrl }: { id: string, apiBaseUrl: string }) =
 	const boxAccentColor = useColorModeValue("gray.200", "gray.900");
 
 	const [isLoading, setIsLoading] = useState(true);
-	let [messages, setMessages] = useState<Message[]>([]);
+	const [messages, setMessages] = useState<Message[]>([]);
 
 	const boxEndRef = useRef<HTMLDivElement | null>(null);
 
@@ -35,11 +35,7 @@ const MessageDetail = ({ id, apiBaseUrl }: { id: string, apiBaseUrl: string }) =
 
 	// Clear messages when topic id change
 	useEffect(() => {
-		console.log('var ' + apiBaseUrl);
-
 		console.log("Changed id to " + id);
-
-		messages = [];
 
 		// Reset page to 0
 		setCurrPage(0);
@@ -91,7 +87,7 @@ const MessageDetail = ({ id, apiBaseUrl }: { id: string, apiBaseUrl: string }) =
 
 		messages.push(tailMessage);
 		setMessages([...messages]);
-
+		scrollToBottom();
 	}, [messages, id]);
 
 	// Control event source to work with SSE for the incoming message
