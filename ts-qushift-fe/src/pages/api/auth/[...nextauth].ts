@@ -15,11 +15,13 @@ if (boolean(process.env.DEBUG_LOGIN) || process.env.NODE_ENV === "development") 
 				role: { label: "Role", type: "text" }
 			},
 			async authorize(credentials) {
-              return {
-                  id: credentials.username,
-                  name: credentials.username,
-                  role: credentials.role
-                };
+				const user = {
+					id: credentials.username,
+					sub: credentials.role,
+					name: credentials.username,
+					role: credentials.role,
+				};
+				return user;
 			}
 		})
 	);
@@ -32,18 +34,19 @@ export const authOptions: AuthOptions = {
 		// error: "/auth/error",
 	},
 	callbacks: {
-		async session({ session, token }) {
+		async session({ session, token, user }) {
 			session.user.id = token.name;
 			session.user.role = token.role;
 			session.user.name = token.name;
 			return session;
 		},
-		async jwt({ token }) {
+		async jwt({ token , account}) {
+			token.role = "general"; // hard code role for debug user
 			return token;
 		},
 	},
 	events: {
-		async signIn({ user, account, isNewUser }) {
+		async signIn() {
 			console.log("handle event sign in");
 		},
 	},

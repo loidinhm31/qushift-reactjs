@@ -13,7 +13,6 @@ const Messages = ({ apiBaseUrl }: { apiBaseUrl: string }) => {
 	const boxBgColor = useColorModeValue("white", "gray.800");
 	const boxAccentColor = useColorModeValue("gray.200", "gray.900");
 
-
 	if (!session) {
 		return;
 	}

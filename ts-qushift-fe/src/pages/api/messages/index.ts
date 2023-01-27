@@ -1,4 +1,7 @@
-const handler = async (req, res) => {
+import * as process from "process";
+import { withoutRole } from "../../../lib/auth";
+
+const handler = withoutRole("banned", async (req, res) => {
 	const { user } = req.query;
 
 	const topicRes = await fetch(`${process.env.API_BASE_URL}/topics?userId=${user}&start=0&size=5`, {
@@ -8,6 +11,6 @@ const handler = async (req, res) => {
 
 	// Send received topics to the client.
 	res.status(200).json(topics);
-};
+});
 
 export default handler;
