@@ -29,10 +29,6 @@ const MessageDetail = ({ id, apiBaseUrl }: { id: string, apiBaseUrl: string }) =
 
 	const { data: session } = useSession();
 
-	if (!session) {
-		return;
-	}
-
 	// Clear messages when topic id change
 	useEffect(() => {
 		console.log("Changed id to " + id);
@@ -132,6 +128,10 @@ const MessageDetail = ({ id, apiBaseUrl }: { id: string, apiBaseUrl: string }) =
 			}
 		}
 	};
+
+	if (!session) {
+		return;
+	}
 
 	return (
 		<>
