@@ -33,6 +33,9 @@ const MessageDetail = ({ id, apiBaseUrl }: { id: string, apiBaseUrl: string }) =
 	useEffect(() => {
 		console.log("Changed id to " + id);
 
+		messages.splice(0);
+		setMessages(messages);
+
 		// Reset page to 0
 		setCurrPage(0);
 		setPrevPage(0);
