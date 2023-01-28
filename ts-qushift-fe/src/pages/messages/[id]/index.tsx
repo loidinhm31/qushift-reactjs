@@ -46,10 +46,13 @@ const MessageDetail = ({ id, apiBaseUrl }: { id: string, apiBaseUrl: string }) =
 	// Get history messages
 	useEffect(() => {
 		console.log(`Getting history for id ${id}...${currPage}`);
+		setIsLoading(true);
 
 		get(`${apiBaseUrl}/messages?topicId=${id}&start=0&size=10`)
 			.then((data) => {
-				setMessages(data);
+				messages.push(...data);
+				setMessages(messages);
+
 				setIsLoading(false);
 			})
 			.finally(() => scrollToBottom())
