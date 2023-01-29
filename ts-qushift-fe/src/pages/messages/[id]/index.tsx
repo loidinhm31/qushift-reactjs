@@ -3,7 +3,7 @@ import Head from "next/head";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { getDashboardLayout } from "src/components/Layout";
 import { Message } from "../../../types/Conversation";
-import { Topic } from "../../../components/Messages/Topic";
+import { Topic } from "../../../components/Topic/Topic";
 import { MessageTable } from "src/components/Messages/MessageTable";
 import { MessageLoading } from "../../../components/Messages/MessageLoading";
 import React, { useCallback, useEffect, useRef, useState } from "react";

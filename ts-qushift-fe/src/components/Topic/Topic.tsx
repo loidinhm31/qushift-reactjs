@@ -6,6 +6,8 @@ import { get, post } from "../../lib/api";
 import { Member, Topic } from "../../types/Conversation";
 import useSWRMutation from "swr/mutation";
 import { useSession } from "next-auth/react";
+import { SlNote } from "react-icons/sl";
+import { CreatableTopicElement } from "./CreatableTopicElement";
 
 interface TopicProps {
 	apiBaseUrl: string;
@@ -26,7 +28,7 @@ export function Topic({apiBaseUrl, currTopicId, sendSignal}: TopicProps) {
 	const [isUpdate, setUpdate] = useState(false);
 
 	// Get all topics
-	const { data: topics } = useSWRImmutable(`../api/messages/?user=${session.user.id}`, get, { revalidateOnMount: true });
+	const { data: topics } = useSWRImmutable(`../api/topics/?user=${session.user.id}`, get, { revalidateOnMount: true });
 
 	const { trigger } = useSWRMutation("/api/messages/send_signal", post)
 
@@ -57,7 +59,7 @@ export function Topic({apiBaseUrl, currTopicId, sendSignal}: TopicProps) {
 		setUpdate(true);
 	}, [msgMap]);
 
-	// Set update notify for each topic in map
+	// Set update notify for each Topic in map
 	useEffect(() => {
 		setUpdate(false);
 	}, [isUpdate]);
@@ -67,6 +69,7 @@ export function Topic({apiBaseUrl, currTopicId, sendSignal}: TopicProps) {
 		const url = `${apiBaseUrl}/topics/stream/${session.user.id}`;
 		const eventSource = new EventSource(url);
 
+		console.log("Opening stream for topic...");
 		eventSource.onopen = (event: any) => console.log("open", event);
 
 		eventSource.onmessage = (event: any) => {
@@ -102,45 +105,50 @@ export function Topic({apiBaseUrl, currTopicId, sendSignal}: TopicProps) {
 			}
 		}
 	}, [sendSignal])
+
 	if (!topics) {
 		return <CircularProgress isIndeterminate />;
 	}
 
 	return (
-		<Box
-			overflowY="auto" height="700px"
-			className="overflow-y-auto p-3 w-full">
-			<List className="grid grid-cols-3 col-span-3 sm:flex sm:flex-col gap-2">
-				{topics.map((item, itemIndex) => (
-					<ListItem
-						onClick={() => goToTopic(item.id)}
-						key={`${item.name}-${itemIndex}`}
-						style={{ textDecoration: "none" }}>
+		<Box>
+			<CreatableTopicElement>
+				<Box/>
+			</CreatableTopicElement>
+			<Box overflowY="auto" height="700px"
+				className="overflow-y-auto p-3 w-full">
+				<List className="grid grid-cols-3 col-span-3 sm:flex sm:flex-col gap-2">
+					{topics && topics.map((item, itemIndex) => (
+						<ListItem
+							onClick={() => goToTopic(item.id)}
+							key={`${item.name}-${itemIndex}`}
+							style={{ textDecoration: "none" }}>
 
-						<Button
-							justifyContent={["center", "center", "center", "left"]}
-							gap="3"
-							size="lg"
-							width="full"
-							bg={currTopicId === item.id ? "blue.500" : null}
-							_hover={currTopicId === item.id ? { bg: "blue.600" } : null}
-						>
-							<Text
-								fontWeight="normal"
-								color={currTopicId === item.id ? "white" : null}
-								className="hidden lg:block"
+							<Button
+								justifyContent={["center", "center", "center", "left"]}
+								gap="3"
+								size="lg"
+								width="full"
+								bg={currTopicId === item.id ? "blue.500" : null}
+								_hover={currTopicId === item.id ? { bg: "blue.600" } : null}
 							>
-								{item.name}
-								{msgMap.get(item.id) !== "0" &&
-                                    <Badge ml="1" fontSize="0.9em" colorScheme="red">
-										{msgMap.get(item.id)}
-                                    </Badge>
-								}
-							</Text>
-						</Button>
-					</ListItem>
-				))}
-			</List>
+								<Text
+									fontWeight="normal"
+									color={currTopicId === item.id ? "white" : null}
+									className="hidden lg:block"
+								>
+									{item.name}
+									{msgMap.get(item.id) !== "0" &&
+                                        <Badge ml="1" fontSize="0.9em" colorScheme="red">
+											{msgMap.get(item.id)}
+                                        </Badge>
+									}
+								</Text>
+							</Button>
+						</ListItem>
+					))}
+				</List>
+			</Box>
 		</Box>
 	)
 }

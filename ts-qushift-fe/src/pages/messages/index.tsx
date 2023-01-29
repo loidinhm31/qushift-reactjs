@@ -1,7 +1,7 @@
 import { Box, HStack, useColorModeValue } from "@chakra-ui/react";
 import Head from "next/head";
 import { getDashboardLayout } from "src/components/Layout";
-import { Topic } from "../../components/Messages/Topic";
+import { Topic } from "../../components/Topic/Topic";
 import React, { useEffect } from "react";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { useSession } from "next-auth/react";

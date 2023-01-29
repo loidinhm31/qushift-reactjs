@@ -4,7 +4,7 @@ import { withoutRole } from "../../../lib/auth";
 const handler = withoutRole("banned", async (req, res) => {
 	const { user } = req.query;
 
-	const topicRes = await fetch(`${process.env.API_BASE_URL}/topics?userId=${user}&start=0&size=5`, {
+	const topicRes = await fetch(`${process.env.API_BASE_URL}/topics?userId=${user}&start=0&size=20`, {
 		method: "GET",
 	});
 	const topics = await topicRes.json();
