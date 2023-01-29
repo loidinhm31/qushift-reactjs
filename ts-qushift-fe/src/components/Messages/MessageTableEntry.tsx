@@ -31,6 +31,20 @@ export function MessageTableEntry(props: MessageTableEntryProps) {
 		[borderColor, inlineAvatar]
 	);
 
+	const getDateTime = (dateTime) => {
+		const now = new Date(dateTime)
+		const date = now.getDate();
+		const month = now.getMonth() + 1;
+		const year = now.getFullYear();
+		const hours = now.getHours()
+		const minutes = now.getMinutes()
+		const dayToDisplay = date < 10 ? `0${date}` : `${date}`;
+		const monthToDisplay = month < 10 ? `0${month}` : `${month}`;
+		const hoursToDisplay = hours < 10 ? `0${hours}` : `${hours}`
+		const minutesToDisplay = minutes < 10 ? `0${minutes}` : `${minutes}`
+		return `${year}/${monthToDisplay}/${dayToDisplay} ${hoursToDisplay}:${minutesToDisplay}`
+	};
+
 	return (
 		<>
 			{item.sender === session.user.id &&
@@ -39,19 +53,22 @@ export function MessageTableEntry(props: MessageTableEntryProps) {
 
                         <VStack>
 							{!inlineAvatar && avatar}
-							<Box fontSize="xs">{item.sender}</Box>
+							<Box fontSize="sm">{item.sender}</Box>
 						</VStack>
-                        <Box gap="2"
-                             width={["full", "full", "full", "fit-content"]}
-                             maxWidth={["full", "full", "full", "2xl"]}
-                             p="4"
-                             borderRadius="md"
-                             bg={backgroundColor}
-                             whiteSpace="pre-wrap"
-                        >
-							{inlineAvatar && avatar}
-							{item.content}
-                        </Box>
+						<VStack>
+                            <Box gap="2"
+                                 width={["full", "full", "full", "fit-content"]}
+                                 maxWidth={["full", "full", "full", "2xl"]}
+                                 p="4"
+                                 borderRadius="md"
+                                 bg={backgroundColor}
+                                 whiteSpace="pre-wrap"
+                            >
+								{inlineAvatar && avatar}
+								{item.content}
+                            </Box>
+                            <Box fontSize="xs">{getDateTime(item.createdAt)}</Box>
+						</VStack>
                     </HStack>
                 </Stack>
 
@@ -65,18 +82,21 @@ export function MessageTableEntry(props: MessageTableEntryProps) {
                             <Box fontSize="xs">{item.sender}</Box>
                         </VStack>
 
-                        <Box
-                            width={["full", "full", "full", "fit-content"]}
-                            maxWidth={["full", "full", "full", "2xl"]}
-                            p="4"
-                            borderRadius="md"
-                            bg={backgroundColor2}
-                            whiteSpace="pre-wrap"
-                        >
-							{inlineAvatar && avatar}
-							{item.content}
-                        </Box>
-                    </HStack>
+						<VStack>
+                            <Box
+                                width={["full", "full", "full", "fit-content"]}
+                                maxWidth={["full", "full", "full", "2xl"]}
+                                p="4"
+                                borderRadius="md"
+                                bg={backgroundColor2}
+                                whiteSpace="pre-wrap"
+                            >
+								{inlineAvatar && avatar}
+								{item.content}
+                            </Box>
+                            <Box fontSize="sm">{getDateTime(item.createdAt)}</Box>
+						</VStack>
+					</HStack>
 				</Stack>
 			}
 		</>
