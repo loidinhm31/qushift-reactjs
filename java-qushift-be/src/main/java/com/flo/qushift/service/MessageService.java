@@ -5,6 +5,7 @@ import com.flo.qushift.document.Message;
 import com.flo.qushift.document.StreamMessage;
 import com.flo.qushift.document.Topic;
 import com.flo.qushift.dto.MessageDto;
+import com.flo.qushift.model.Member;
 import com.flo.qushift.repository.MessageStreamRepository;
 import com.flo.qushift.repository.ReactiveMessageRepository;
 import com.flo.qushift.repository.ReactiveTopicRepository;
@@ -29,32 +30,12 @@ public class MessageService {
     private final MessageStreamRepository messageStreamRepository;
 
     private final ReactiveTopicRepository reactiveTopicRepository;
-
-    public Mono<StreamMessage> saveMessage(MessageDto messageDto) {
-        Message message = Message.builder()
-                .topicId(messageDto.getTopicId())
-                .sender(messageDto.getSender())
-                .receiver(messageDto.getReceiver())
-                .content(messageDto.getContent())
-                .createdAt(LocalDateTime.now())
-                .build();
-
-        // Save main message
-        saveAndDisposeMessage(message);
-
+    public Mono<Void> saveMessage(MessageDto messageDto) {
         // Update information for topic
-        Mono<Topic> topicMono = reactiveTopicRepository.findTopicById(message.getTopicId());
-        subscribeAndSaveAnDisposeTopic(topicMono, message.getSender());
+        Mono<Topic> topicMono = reactiveTopicRepository.findById(messageDto.getTopicId());
+        subscribeAndSaveAndDisposeTopic(topicMono, messageDto);
 
-        StreamMessage streamMessage = StreamMessage.builder()
-                .id(message.getId())
-                .topicId(messageDto.getTopicId())
-                .sender(messageDto.getSender())
-                .receiver(messageDto.getReceiver())
-                .content(messageDto.getContent())
-                .createdAt(message.getCreatedAt())
-                .build();
-        return messageStreamRepository.save(streamMessage);
+        return Mono.empty();
     }
 
     public Mono<Void> deleteMessage(Message message) {
@@ -66,30 +47,67 @@ public class MessageService {
     }
 
     public Flux<Message> getPaginatedMessages(String topicId, int start, int pageSize) {
-        return reactiveMessageRepository.findAllByTopicId(topicId, PageRequest.of(start, pageSize, Sort.by("createdAt").descending())).sort(Comparator.comparing(BaseDocument::getCreatedAt));
+        return reactiveMessageRepository.findAllByTopicId(
+                topicId,
+                PageRequest.of(start, pageSize, Sort.by("createdAt").descending())
+        ).sort(Comparator.comparing(BaseDocument::getCreatedAt));
     }
 
-    private Disposable saveAndDisposeMessage(Message message) {
-        return reactiveMessageRepository.save(message).subscribe();
-    }
-
-    private Disposable subscribeAndSaveAnDisposeTopic(Mono<Topic> topicMono, String sender) {
-        return topicMono
+    private Disposable subscribeAndSaveAndDisposeTopic(Mono<Topic> topicMono, MessageDto messageDto) {
+        Disposable disposableTopic = topicMono
                 .publishOn(Schedulers.boundedElastic())
                 .doOnNext(topic -> {
-                    topic.getMembers().forEach(member -> {
-                        if (member.getUser().equals(sender)) {
-                            if (!member.getCheckSeen()) {
-                                member.setCheckSeen(Boolean.TRUE);
-                                member.setNotSeenCount(0);
+
+                    // Currently only check with user from DTO, TODO(#1) check from authentication
+                    Optional<Member> resultMember =
+                            topic.getMembers().stream().filter(user -> user.getUser().equals(messageDto.getSender())).findAny();
+
+                    if (resultMember.isPresent()) {
+                        // Update topic props
+                        topic.getMembers().forEach(member -> {
+                            if (member.getUser().equals(messageDto.getSender())) {
+                                if (!member.getCheckSeen()) {
+                                    member.setCheckSeen(Boolean.TRUE);
+                                    member.setNotSeenCount(0);
+                                }
+                            } else {
+                                member.setCheckSeen(Boolean.FALSE);
+                                member.setNotSeenCount(member.getNotSeenCount() + 1);
                             }
-                        } else {
-                            member.setCheckSeen(Boolean.FALSE);
-                            member.setNotSeenCount(member.getNotSeenCount() + 1);
-                        }
-                    });
-                    reactiveTopicRepository.save(topic).subscribe();
+                        });
+                        reactiveTopicRepository.save(topic).subscribe();
+
+                        // Save main message
+                        Message message = Message.builder()
+                                .topicId(messageDto.getTopicId())
+                                .sender(messageDto.getSender())
+                                .receiver(messageDto.getReceiver())
+                                .content(messageDto.getContent())
+                                .createdAt(LocalDateTime.now())
+                                .build();
+                        Mono<Message> messageMono = reactiveMessageRepository.save(message);
+
+                        // Save stream message flow
+                        saveAndDisposeMessage(messageMono);
+                    }
                 })
                 .subscribe();
+        return disposableTopic;
+    }
+
+    private Disposable saveAndDisposeMessage(Mono<Message> messageMono) {
+        return messageMono
+                .publishOn(Schedulers.boundedElastic())
+                .subscribe(message -> {
+                    StreamMessage streamMessage = StreamMessage.builder()
+                            .id(message.getId())    // Save with the same message id
+                            .topicId(message.getTopicId())
+                            .sender(message.getSender())
+                            .receiver(message.getReceiver())
+                            .content(message.getContent())
+                            .createdAt(message.getCreatedAt())
+                            .build();
+                    messageStreamRepository.save(streamMessage).subscribe();
+                });
     }
 }
