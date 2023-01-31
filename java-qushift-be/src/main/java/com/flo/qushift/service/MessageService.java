@@ -13,13 +13,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 import java.time.LocalDateTime;
 import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
@@ -30,33 +31,13 @@ public class MessageService {
     private final MessageStreamRepository messageStreamRepository;
 
     private final ReactiveTopicRepository reactiveTopicRepository;
-    public Mono<Void> saveMessage(MessageDto messageDto) {
+
+    public Mono<StreamMessage> saveMessage(MessageDto messageDto) {
         // Update information for topic
         Mono<Topic> topicMono = reactiveTopicRepository.findById(messageDto.getTopicId());
-        subscribeAndSaveAndDisposeTopic(topicMono, messageDto);
-
-        return Mono.empty();
-    }
-
-    public Mono<Void> deleteMessage(Message message) {
-        return reactiveMessageRepository.delete(message);
-    }
-
-    public Flux<StreamMessage> getTailMessages(String topicId) {
-        return messageStreamRepository.findByTopicId(topicId);
-    }
-
-    public Flux<Message> getPaginatedMessages(String topicId, int start, int pageSize) {
-        return reactiveMessageRepository.findAllByTopicId(
-                topicId,
-                PageRequest.of(start, pageSize, Sort.by("createdAt").descending())
-        ).sort(Comparator.comparing(BaseDocument::getCreatedAt));
-    }
-
-    private Disposable subscribeAndSaveAndDisposeTopic(Mono<Topic> topicMono, MessageDto messageDto) {
-        Disposable disposableTopic = topicMono
+        return topicMono
                 .publishOn(Schedulers.boundedElastic())
-                .doOnNext(topic -> {
+                .flatMap(topic -> {
 
                     // Currently only check with user from DTO, TODO(#1) check from authentication
                     Optional<Member> resultMember =
@@ -85,29 +66,38 @@ public class MessageService {
                                 .content(messageDto.getContent())
                                 .createdAt(LocalDateTime.now())
                                 .build();
-                        Mono<Message> messageMono = reactiveMessageRepository.save(message);
-
-                        // Save stream message flow
-                        saveAndDisposeMessage(messageMono);
+                        return reactiveMessageRepository.save(message)
+                                .flatMap(mm -> {
+                                    // Save stream message
+                                    StreamMessage streamMessage = StreamMessage.builder()
+                                            .id(mm.getId())    // Save with the same message id
+                                            .topicId(mm.getTopicId())
+                                            .sender(mm.getSender())
+                                            .receiver(mm.getReceiver())
+                                            .content(mm.getContent())
+                                            .createdAt(mm.getCreatedAt())
+                                            .build();
+                                    return messageStreamRepository.save(streamMessage);
+                                });
                     }
-                })
-                .subscribe();
-        return disposableTopic;
+                    return Mono.just(StreamMessage.builder().build());
+                });
     }
 
-    private Disposable saveAndDisposeMessage(Mono<Message> messageMono) {
-        return messageMono
-                .publishOn(Schedulers.boundedElastic())
-                .subscribe(message -> {
-                    StreamMessage streamMessage = StreamMessage.builder()
-                            .id(message.getId())    // Save with the same message id
-                            .topicId(message.getTopicId())
-                            .sender(message.getSender())
-                            .receiver(message.getReceiver())
-                            .content(message.getContent())
-                            .createdAt(message.getCreatedAt())
-                            .build();
-                    messageStreamRepository.save(streamMessage).subscribe();
-                });
+    public Mono<Void> deleteMessage(Message message) {
+        return reactiveMessageRepository.delete(message);
+    }
+
+    public Flux<StreamMessage> getStreamMessagesByTopic(String topicId) {
+        List<String> values = List.of(topicId, "STREAM_INIT"); // init value for mongo capped collection to avoid tailable cursor is closed
+        return messageStreamRepository.findByTopicIdIn(values)
+                .subscribeOn(Schedulers.boundedElastic());
+    }
+
+    public Flux<Message> getPaginatedMessages(String topicId, int start, int pageSize) {
+        return reactiveMessageRepository.findAllByTopicId(
+                topicId,
+                PageRequest.of(start, pageSize, Sort.by("createdAt").descending())
+        ).sort(Comparator.comparing(BaseDocument::getCreatedAt));
     }
 }
