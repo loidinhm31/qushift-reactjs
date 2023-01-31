@@ -1,11 +1,13 @@
 package com.flo.qushift.service;
 
-import com.flo.qushift.document.Message;
+import com.flo.qushift.document.StreamMessage;
 import com.flo.qushift.document.Topic;
 import com.flo.qushift.dto.TopicDto;
+import com.flo.qushift.model.Member;
 import com.flo.qushift.repository.MessageStreamRepository;
 import com.flo.qushift.repository.ReactiveTopicRepository;
 import lombok.RequiredArgsConstructor;
+import org.bson.types.ObjectId;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -13,6 +15,7 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 import java.time.LocalDateTime;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -34,25 +37,35 @@ public class TopicService {
 
     public Flux<Topic> getPaginatedTopics(String userId, int start, int pageSize) {
         Flux<Topic> channelFlux =
-                reactiveTopicRepository.findAllByMemberMatchUser(userId,
+                reactiveTopicRepository.findByMemberMatchUser(userId,
                         PageRequest.of(start, pageSize)
                 );
 
         return channelFlux;
     }
 
-    public Flux<Topic> getTailMessagesByReceiver(String receiverId) {
-        Flux<Message> messageFlux = messageStreamRepository.findByReceiverOrSender(receiverId, receiverId);
+    public Mono<Topic> getTopicByUser(String topicId, String userId) {
+        Mono<Topic> topicMono =
+                reactiveTopicRepository.findByIdAndMemberMatchUser(new ObjectId(topicId), userId);
+
+        return topicMono;
+    }
+
+    public Flux<Topic> getStreamMessagesByReceiver(String receiverId) {
+        Flux<StreamMessage> messageFlux = messageStreamRepository.findByReceiverOrSender(receiverId, receiverId)
+                .subscribeOn(Schedulers.boundedElastic());
 
         Flux<Topic> topicFlux = messageFlux
                 .flatMap(message ->
-                        reactiveTopicRepository.findTopicByMemberMatchUser(receiverId));
+                        reactiveTopicRepository.findByMemberMatchUser(receiverId))
+                .filter(topic -> topic.getMembers().stream()
+                        .anyMatch(member -> !member.getCheckSeen()));
 
         return topicFlux;
     }
 
     public Mono<Void> changeCheckSeenTopicForMember(String topicId) {
-        Mono<Topic> messageMono = reactiveTopicRepository.findTopicById(topicId);
+        Mono<Topic> messageMono = reactiveTopicRepository.findById(topicId);
 
         return messageMono
                 .publishOn(Schedulers.boundedElastic())
