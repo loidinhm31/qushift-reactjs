@@ -1,10 +1,11 @@
 import * as process from "process";
 import { withoutRole } from "../../../lib/auth";
+import { getSession } from "next-auth/react";
 
 const handler = withoutRole("banned", async (req, res) => {
-	const { user } = req.query;
+    const session = await getSession({ req });
 
-	const topicRes = await fetch(`${process.env.API_BASE_URL}/topics?userId=${user}&start=0&size=20`, {
+    const topicRes = await fetch(`${process.env.API_BASE_URL}/topics?userId=${session.user.id}&start=0&size=20`, {
 		method: "GET",
 	});
 	const topics = await topicRes.json();
