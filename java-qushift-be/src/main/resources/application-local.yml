@@ -1,0 +1,8 @@
+spring:
+    data:
+        mongodb:
+            uri: mongodb://mongodb:mongodbpw@localhost:27017/?readPreference=primary
+            database: qushift
+
+client:
+    frontend-endpoint: http://localhost:4000

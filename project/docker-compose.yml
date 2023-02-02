@@ -1,0 +1,41 @@
+version: '3'
+
+services:
+    mongo:
+        image: "mongo:6.0"
+        ports:
+            - "27017:27017"
+        environment:
+            MONGO_INITDB_DATABASE: webservice
+            MONGO_INITDB_ROOT_USERNAME: mongodb
+            MONGO_INITDB_ROOT_PASSWORD: mongodbpw
+        volumes:
+            - ~/storage/data/mongodb:/data/db
+
+    java-qushift-backend:
+        build:
+            context: ./../java-qushift-be
+            dockerfile: ./../project/docker/Dockerfile.java-backend
+        restart: always
+        ports:
+            - "9090:9090"
+        environment:
+            - SPRING_PROFILES_ACTIVE=docker
+        deploy:
+            mode: replicated
+            replicas: 1
+
+    nextjs-qushift-frontend:
+        build:
+            context: ./../ts-qushift-fe
+            dockerfile: ./../project/docker/Dockerfile.nextjs-frontend
+        restart: always
+        ports:
+            - "4000:4000"
+        environment:
+            - NEXTAUTH_SECRET=cXVzaGlmdGhlbGxv
+            - NEXTAUTH_URL=http://localhost:4000
+            - DEBUG_LOGIN=true
+        deploy:
+            mode: replicated
+            replicas: 1

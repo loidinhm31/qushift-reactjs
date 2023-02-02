@@ -1,0 +1,8 @@
+spring:
+    data:
+        mongodb:
+            uri: mongodb://mongodb:mongodbpw@mongo:27017/?readPreference=primary
+            database: qushift
+
+client:
+    frontend-endpoint: http://nextjs-qushift-frontend:4000

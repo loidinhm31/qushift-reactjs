@@ -1,12 +1,15 @@
+server:
+  port: 9090
+
 spring:
-  data:
-    mongodb:
-      uri: mongodb://mongodb:mongodbpw@localhost:27017/?readPreference=primary
-      database: qushift
+  application:
+    name: qushift
+  profiles:
+    active: local
 
 logging:
   level:
     org:
       springframework:
-          web: DEBUG
+        web: DEBUG
 #        hibernate: INFO
