@@ -10,6 +10,7 @@ import com.flo.qushift.repository.MessageStreamRepository;
 import com.flo.qushift.repository.ReactiveMessageRepository;
 import com.flo.qushift.repository.ReactiveTopicRepository;
 import lombok.RequiredArgsConstructor;
+import org.bson.types.ObjectId;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -20,6 +21,7 @@ import reactor.core.scheduler.Schedulers;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @RequiredArgsConstructor
@@ -41,12 +43,12 @@ public class MessageService {
 
                     // Currently only check with user from DTO, TODO(#1) check from authentication
                     Optional<Member> resultMember =
-                            topic.getMembers().stream().filter(user -> user.getUser().equals(messageDto.getSender())).findAny();
+                            topic.getMembers().stream().filter(user -> user.getUserId().equals(messageDto.getSender())).findAny();
 
                     if (resultMember.isPresent()) {
                         // Update topic props
                         topic.getMembers().forEach(member -> {
-                            if (member.getUser().equals(messageDto.getSender())) {
+                            if (member.getUserId().equals(messageDto.getSender())) {
                                 if (!member.getCheckSeen()) {
                                     member.setCheckSeen(Boolean.TRUE);
                                     member.setNotSeenCount(0);
@@ -94,10 +96,21 @@ public class MessageService {
                 .subscribeOn(Schedulers.boundedElastic());
     }
 
-    public Flux<Message> getPaginatedMessages(String topicId, int start, int pageSize) {
-        return reactiveMessageRepository.findAllByTopicId(
-                topicId,
-                PageRequest.of(start, pageSize, Sort.by("createdAt").descending())
-        ).sort(Comparator.comparing(BaseDocument::getCreatedAt));
+    public Flux<Message> getPaginatedMessages(String topicId, int start, int pageSize, String userId) {
+        // TODO(#1) Check user from authentication, currently only check from param
+        Mono<Topic> topicMono = reactiveTopicRepository.findByIdAndMemberMatchUser(new ObjectId(topicId), userId)
+                .subscribeOn(Schedulers.boundedElastic());
+
+        return topicMono
+                .flatMapMany(topic -> {
+                    if (Objects.nonNull(topic)) {
+                        return reactiveMessageRepository.findAllByTopicId(
+                                topicId,
+                                userId,
+                                PageRequest.of(start, pageSize, Sort.by("createdAt").descending())
+                        ).sort(Comparator.comparing(BaseDocument::getCreatedAt));
+                    }
+                    return Flux.empty();
+                });
     }
 }

@@ -10,7 +10,9 @@ import lombok.experimental.SuperBuilder;
 @Setter
 @NoArgsConstructor
 public class Member {
-    private String user;
+    private String userId;
+
+    private String username;
 
     private Boolean checkSeen = false;
 

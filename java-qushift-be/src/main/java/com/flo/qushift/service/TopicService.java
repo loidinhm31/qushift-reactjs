@@ -45,6 +45,7 @@ public class TopicService {
     }
 
     public Mono<Topic> getTopicByUser(String topicId, String userId) {
+        // TODO(#1)
         Mono<Topic> topicMono =
                 reactiveTopicRepository.findByIdAndMemberMatchUser(new ObjectId(topicId), userId);
 

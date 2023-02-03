@@ -9,7 +9,7 @@ import reactor.core.publisher.Flux;
 @Repository
 public interface ReactiveMessageRepository extends ReactiveMongoRepository<Message, String> {
 
-    Flux<Message> findAllByTopicId(String topicId, Pageable pageable);
+    Flux<Message> findAllByTopicId(String topicId, String userId, Pageable pageable);
 
     Flux<Message> findAllByTopicId(String topicId);
 }

@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/messages")
@@ -31,10 +33,14 @@ public class MessageController {
         return messageService.getStreamMessagesByTopic(topicId);
     }
 
-    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public Flux<Message> retrieveMessages(@RequestParam String topicId,
-                                          @RequestParam Integer start,
-                                          @RequestParam Integer size) {
-        return messageService.getPaginatedMessages(topicId, start, size);
+    @GetMapping(produces = MediaType.APPLICATION_NDJSON_VALUE)
+    public Mono<ResponseEntity<List<Message>>> retrieveMessages(@RequestParam String topicId,
+                                                               @RequestParam Integer start,
+                                                               @RequestParam Integer size,
+                                                               @RequestParam String userId) {
+        // TODO remove userId when using authentication
+        return messageService.getPaginatedMessages(topicId, start, size, userId)
+                .collectList()
+                .map(ResponseEntity::ok);
     }
 }
