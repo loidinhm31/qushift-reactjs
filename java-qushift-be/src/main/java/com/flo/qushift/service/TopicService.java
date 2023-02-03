@@ -65,15 +65,17 @@ public class TopicService {
         return topicFlux;
     }
 
-    public Mono<Void> changeCheckSeenTopicForMember(String topicId) {
-        Mono<Topic> messageMono = reactiveTopicRepository.findById(topicId);
+    public Mono<Void> changeCheckSeenTopicForMember(String topicId, String userId) {
+        Mono<Topic> messageMono = reactiveTopicRepository.findByIdAndMemberMatchUser(new ObjectId(topicId), userId);
 
         return messageMono
                 .publishOn(Schedulers.boundedElastic())
                 .doOnNext(topic -> {
                     topic.getMembers().forEach(member -> {
-                        member.setCheckSeen(Boolean.TRUE);
-                        member.setNotSeenCount(0);
+                        if (member.getUserId().equals(userId)) {
+                            member.setCheckSeen(Boolean.TRUE);
+                            member.setNotSeenCount(0);
+                        }
                     });
 
                     reactiveTopicRepository.save(topic).subscribe();

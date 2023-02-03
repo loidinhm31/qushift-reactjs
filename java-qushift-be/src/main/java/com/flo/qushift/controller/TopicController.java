@@ -42,8 +42,8 @@ public class TopicController {
     }
 
     @PutMapping("/signal/{topicId}")
-    public Mono<ResponseEntity<HttpStatus>> sendSignalForSeen(@PathVariable String topicId) {
-        return topicService.changeCheckSeenTopicForMember(topicId)
+    public Mono<ResponseEntity<HttpStatus>> sendSignalForSeen(@PathVariable String topicId, @RequestParam String userId) {
+        return topicService.changeCheckSeenTopicForMember(topicId, userId)
                 .map(s -> ResponseEntity.ok(HttpStatus.ACCEPTED));
     }
 }
