@@ -13,15 +13,17 @@ import { get } from "../../../lib/api";
 import { useRouter } from "next/router";
 
 const MessageDetail = ({ id }: { id: string }) => {
+	const router = useRouter();
+
 	const { data: session } = useSession();
 
 	const boxBgColor = useColorModeValue("white", "gray.800");
 	const boxAccentColor = useColorModeValue("gray.200", "gray.900");
 
-	const [sendSignal, setSendSignal] = useState(false);
-	const router = useRouter();
+	const [sendSignal, setSendSignal] = useState<boolean>(false);
 
 	const [currTopic, setCurrTopic] = useState<Topic>(undefined);
+
 	const { isLoading, mutate, error } = useSWR<Topic>(`../api/topics/${id}`, get, {
 		onSuccess: (data) => {
 			setCurrTopic(data);
@@ -39,8 +41,7 @@ const MessageDetail = ({ id }: { id: string }) => {
 		<>
 			<Head>
 				<title>
-					TODO
-
+					QuShift - {currTopic && currTopic.name}
 				</title>
 				<meta
 					name="description"
@@ -70,7 +71,7 @@ const MessageDetail = ({ id }: { id: string }) => {
 							{currTopic && currTopic.name}
 						</Box>
 
-						<MessageBox topicId={id} onMouseAction={setSendSignal}></MessageBox>
+						<MessageBox key={id} topicId={id} onMouseAction={setSendSignal} />
 
 						<InputBox currTopicId={id} />
 					</Grid>

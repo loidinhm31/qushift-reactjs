@@ -7,79 +7,57 @@ import { Member, Topic } from "../../types/Conversation";
 import useSWRMutation from "swr/mutation";
 import { useSession } from "next-auth/react";
 import { CreatableTopicElement } from "./CreatableTopicElement";
+import { useEventStream } from "../../hooks/eventstream/useEventStream";
+import process from "process";
 
 interface TopicProps {
 	currTopicId?: string;
 	sendSignal: boolean;
 }
 
-export function TopicMenu({currTopicId, sendSignal}: TopicProps) {
+export function TopicMenu({ currTopicId, sendSignal }: TopicProps) {
 	const router = useRouter();
 
 	const { data: session } = useSession();
 
 	const [msgMap, setMsgMap] = useState<Map<string, string>>(new Map());
-	const [updateTopic, setUpdateTopic] = useState<Topic>(undefined);
 
 	// Get all topics
 	const { data: topics } = useSWRImmutable(`../api/topics/page`, get, { revalidateOnMount: true });
 
-	const { trigger } = useSWRMutation("/api/messages/send_signal", post)
+	const { trigger } = useSWRMutation("/api/messages/send_signal", post);
 
-	const goToTopic = useCallback((topicId: string) =>  {
+	const goToTopic = useCallback((topicId: string) => {
 		router.push(`/messages/${topicId}`);
 	}, [router]);
 
+	// Control event source to work with SSE for incoming notify
+	const topic = useEventStream<Topic>(process.env.NEXT_PUBLIC_STREAM_URL, `topics/stream/${session.user.id}`);
+
 	// Listening the incoming notify
 	useEffect(() => {
-		if (updateTopic) {
-			console.log(`Updating notification for receiver on topic ${updateTopic.id}...`)
+		if (topic) {
+			console.log(`Updating notification for receiver on topic ${topic.id}...`);
 
-			const user = updateTopic.members?.find(member => member.user === session.user.id) as Member;
+			const user = topic.members?.find(member => member.user === session.user.id) as Member;
 
 			if (!user.checkSeen) {
-				if (msgMap.has(updateTopic.id)) {
+				if (msgMap.has(topic.id)) {
 					const countSeen = user.notSeenCount;
 					if (countSeen > 99) {
-						msgMap.set(updateTopic.id, "99+");
+						msgMap.set(topic.id, "99+");
 					} else {
-						msgMap.set(updateTopic.id, countSeen.toString());
+						msgMap.set(topic.id, countSeen.toString());
 					}
 				} else {
-					msgMap.set(updateTopic.id, user.notSeenCount.toString());
+					msgMap.set(topic.id, user.notSeenCount.toString());
 				}
 			} else {
-				msgMap.set(updateTopic.id, "0");
+				msgMap.set(topic.id, "0");
 			}
 			setMsgMap(new Map(msgMap));
 		}
-	}, [updateTopic, currTopicId]);
-
-	// Control event source to work with SSE for incoming notify
-	useEffect(() => {
-		// const url = `${apiBaseUrl}/topics/stream/${session.user.id}`;
-		// const eventSource = new EventSource(url);
-		//
-		// console.log("Opening stream for topic...");
-		// eventSource.onopen = (event: any) => console.log("open", event);
-		//
-		// eventSource.onmessage = (event: any) => {
-		// 	const topic: Topic = JSON.parse(event.data);
-		// 	setUpdateTopic(topic);
-		// }
-		//
-		// eventSource.onerror = (event: any) => {
-		// 	console.log("error", event);
-		// 	if (event.readyState === EventSource.CLOSED) {
-		// 		eventSource.close();
-		// 	}
-		// };
-		//
-		// return () => {
-		// 	console.log(`Closing stream for receiver...`);
-		// 	eventSource.close();
-		// };
-	}, [])
+	}, [topic, currTopicId]);
 
 	// Send seen signal to server
 	useEffect(() => {
