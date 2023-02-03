@@ -5,7 +5,6 @@ import { MessageLoading } from "./MessageLoading";
 import { Message } from "../../types/Conversation";
 import { get } from "../../lib/api";
 import { useEventStreamBreakState } from "../../hooks/eventstream/useEventStream";
-import process from "process";
 import useSWR from "swr";
 
 interface MessageProps {
@@ -38,13 +37,12 @@ export function MessageBox(messageProps: MessageProps) {
 					setMessages([...data, ...messages]);
 				}
 			}
-		}
+		},
 	});
 
 	// Control event source to work with SSE for the incoming message
 	const incomingMessage = useEventStreamBreakState<Message>(
-		process.env.NEXT_PUBLIC_STREAM_URL,
-		`messages/stream?topicId=${messageProps.topicId}`
+		`../api/stream/messages/?topicId=${messageProps.topicId}`
 	);
 
 	const scrollToBottom = () => {
@@ -62,7 +60,7 @@ export function MessageBox(messageProps: MessageProps) {
 
 	// Listening the incoming message
 	useEffect(() => {
-		if (incomingMessage) {
+		if (incomingMessage && messages.length > 0) {
 			if (!messages.some((m: Message) => m.id === incomingMessage.id)) {
 				console.log(`Updating stream for id ${messageProps.topicId}...`);
 				setMessages([...messages, incomingMessage]);

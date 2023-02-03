@@ -8,7 +8,6 @@ import { UserMenu } from "./UserMenu";
 import React from "react";
 import { FaUser } from "react-icons/fa";
 import { useSession } from "next-auth/react";
-import { session } from "next-auth/core/routes";
 
 function AccountButton() {
 	const { data: session } = useSession();

@@ -8,7 +8,6 @@ import useSWRMutation from "swr/mutation";
 import { useSession } from "next-auth/react";
 import { CreatableTopicElement } from "./CreatableTopicElement";
 import { useEventStream } from "../../hooks/eventstream/useEventStream";
-import process from "process";
 
 interface TopicProps {
 	currTopicId?: string;
@@ -40,7 +39,9 @@ export function TopicMenu({ currTopicId, sendSignal, dispatch }: TopicProps) {
 	}, [router]);
 
 	// Control event source to work with SSE for incoming notify
-	const topic = useEventStream<Topic>(process.env.NEXT_PUBLIC_STREAM_URL, `topics/stream/${session.user.id}`);
+	const topic = useEventStream<Topic>(
+		`../api/stream/topics`
+	);
 
 	// Listening the incoming notify
 	useEffect(() => {

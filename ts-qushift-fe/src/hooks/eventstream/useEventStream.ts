@@ -1,13 +1,12 @@
 import { useEffect, useState } from "react";
 
-export const useEventStream = <Type extends any>(streamUrl: string, endpoint: string): Type => {
+export const useEventStream = <Type extends any>(endpoint: string): Type => {
 	const [value, setValue] = useState<Type>();
 
 	useEffect(() => {
 		console.log(`Opening stream for endpoint keep state ${endpoint}...`);
 
-		const url = `${streamUrl}/${endpoint}`;
-		const eventSource = new EventSource(url);
+		const eventSource = new EventSource(endpoint);
 
 		eventSource.onopen = (event: any) => {
 			console.log("open", event);
@@ -36,14 +35,13 @@ export const useEventStream = <Type extends any>(streamUrl: string, endpoint: st
 	return value;
 };
 
-export const useEventStreamBreakState = <Type extends any>(streamUrl: string, endpoint: string): Type => {
+export const useEventStreamBreakState = <Type extends any>(endpoint: string): Type => {
 	const [value, setValue] = useState<Type>();
 
 	useEffect(() => {
 		console.log(`Opening stream for endpoint ${endpoint}...`);
 
-		const url = `${streamUrl}/${endpoint}`;
-		const eventSource = new EventSource(url);
+		const eventSource = new EventSource(endpoint);
 
 		eventSource.onopen = (event: any) => {
 			console.log("open", event);

@@ -5,7 +5,7 @@ import { getDashboardLayout } from "src/components/Layout";
 import { TopicMenu } from "../../../components/Topic/TopicMenu";
 import React, { useReducer, useState } from "react";
 import { InputBox } from "../../../components/Messages/InputBox";
-import { getSession, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import { MessageBox } from "../../../components/Messages/MessageBox";
 import useSWR from "swr";
 import { Topic } from "../../../types/Conversation";
@@ -25,7 +25,7 @@ const MessageDetail = ({ id }: { id: string }) => {
 
 	const [currTopic, setCurrTopic] = useState<Topic>(undefined);
 
-	const [msgStage, dispatch] = useReducer(useMessageReducer, initialState);
+	const [msgState, dispatch] = useReducer(useMessageReducer, initialState);
 
 	const { isLoading, mutate, error } = useSWR<Topic>(`../api/topics/${id}`, get, {
 		onSuccess: (data) => {
@@ -80,7 +80,7 @@ const MessageDetail = ({ id }: { id: string }) => {
 
 						<MessageBox key={id} topicId={id} onMouseAction={setSendSignal} />
 
-						<InputBox currTopicId={id} message={msgStage.message} dispatch={dispatch} />
+						<InputBox currTopicId={id} message={msgState.message} dispatch={dispatch} />
 					</Grid>
 				</Box>
 			</HStack>
@@ -90,10 +90,9 @@ const MessageDetail = ({ id }: { id: string }) => {
 
 MessageDetail.getLayout = (page) => getDashboardLayout(page);
 
-export const getServerSideProps = async ({ locale, query, ctx }) => ({
+export const getServerSideProps = async ({ locale, query }) => ({
 	props: {
 		id: query.id,
-		session: await getSession({ ctx }),
 		...(await serverSideTranslations(locale, ["index", "common"]))
 	}
 });
