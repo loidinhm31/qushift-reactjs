@@ -1,5 +1,6 @@
 package com.flo.qushift.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -15,6 +16,9 @@ import java.util.List;
 @Configuration
 @EnableWebFluxSecurity
 public class SecurityConfig {
+    @Value("${client.frontend-endpoint}")
+    private String clientEndpoint;
+
     @Bean
     public SecurityWebFilterChain springSecurityFilterChain(final ServerHttpSecurity http) {
 
@@ -36,8 +40,8 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         final CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedOrigins(List.of("http://localhost:4000"));
-//        configuration.setAllowedOrigins(List.of("*"));  //set access from all domains
+        configuration.setAllowedOrigins(List.of(clientEndpoint));
+//        configuration.setAllowedOrigins(List.of("*"));  // set access from all domains
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
         configuration.setAllowCredentials(true);
         configuration.setAllowedHeaders(List.of("Authorization", "Cache-Control", "Content-Type"));
