@@ -14,9 +14,10 @@ export interface Topic {
 }
 
 export interface Member {
-    user: string;
-    checkSeen: boolean;
-    notSeenCount: number;
+    userId: string;
+    username: string;
+    checkSeen?: boolean;
+    notSeenCount?: number;
 }
 
 export interface CommunicateProp {

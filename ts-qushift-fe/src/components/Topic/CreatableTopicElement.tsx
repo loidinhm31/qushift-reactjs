@@ -25,6 +25,7 @@ import useSWRMutation from "swr/mutation";
 import { SlNote } from "react-icons/sl";
 import { FocusLock } from "@chakra-ui/focus-lock";
 import { useSession } from "next-auth/react";
+import { Member } from "../../types/Conversation";
 
 
 interface CreatableTopicElementProps {
@@ -80,7 +81,7 @@ interface FormProps {
 
 interface TopicProps {
 	topicName: string;
-	topicMembers: string[];
+	topicMembers: Member[];
 }
 
 const SubmitForm = ({ firstFieldRef, onClose }: FormProps) => {
@@ -107,13 +108,20 @@ const SubmitForm = ({ firstFieldRef, onClose }: FormProps) => {
 	};
 
 	const submitTopic = () => {
-		topicForm.topicMembers = [session.user.id];
+		event.preventDefault();
 
-		// TODO api for add users in a topic
+		topicForm.topicMembers = [
+			{
+				userId: session.user.id,
+				username: session.user.id
+			}
+		];
+
+		// TODO(#2) api for add users in a topic
 
 		trigger(topicForm);
 
-		setTopicForm({topicName: "", topicMembers: []});
+		setTopicForm({ topicName: "", topicMembers: [] });
 
 		// Close Popover
 		onClose();

@@ -39,7 +39,7 @@ export function TopicMenu({ currTopicId, sendSignal }: TopicProps) {
 		if (topic) {
 			console.log(`Updating notification for receiver on topic ${topic.id}...`);
 
-			const user = topic.members?.find(member => member.user === session.user.id) as Member;
+			const user = topic.members?.find(member => member.userId === session.user.id) as Member;
 
 			if (!user.checkSeen) {
 				if (msgMap.has(topic.id)) {
