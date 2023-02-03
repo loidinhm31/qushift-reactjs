@@ -1,5 +1,5 @@
 import { Badge, Box, Button, CircularProgress, List, ListItem, Text } from "@chakra-ui/react";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { Dispatch, useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import useSWRImmutable from "swr/immutable";
 import { get, post } from "../../lib/api";
@@ -13,9 +13,10 @@ import process from "process";
 interface TopicProps {
 	currTopicId?: string;
 	sendSignal: boolean;
+	dispatch?: Dispatch<any>;
 }
 
-export function TopicMenu({ currTopicId, sendSignal }: TopicProps) {
+export function TopicMenu({ currTopicId, sendSignal, dispatch }: TopicProps) {
 	const router = useRouter();
 
 	const { data: session } = useSession();
@@ -28,6 +29,13 @@ export function TopicMenu({ currTopicId, sendSignal }: TopicProps) {
 	const { trigger } = useSWRMutation("/api/messages/send_signal", post);
 
 	const goToTopic = useCallback((topicId: string) => {
+		if (dispatch) {
+			dispatch({
+				type: "changed_selection",
+				topicId: topicId
+			});
+		}
+
 		router.push(`/messages/${topicId}`);
 	}, [router]);
 

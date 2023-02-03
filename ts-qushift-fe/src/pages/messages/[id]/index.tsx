@@ -3,7 +3,7 @@ import Head from "next/head";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { getDashboardLayout } from "src/components/Layout";
 import { TopicMenu } from "../../../components/Topic/TopicMenu";
-import React, { useState } from "react";
+import React, { useReducer, useState } from "react";
 import { InputBox } from "../../../components/Messages/InputBox";
 import { getSession, useSession } from "next-auth/react";
 import { MessageBox } from "../../../components/Messages/MessageBox";
@@ -11,6 +11,7 @@ import useSWR from "swr";
 import { Topic } from "../../../types/Conversation";
 import { get } from "../../../lib/api";
 import { useRouter } from "next/router";
+import { initialState, useMessageReducer } from "../../../hooks/message/useMessageReducer";
 
 const MessageDetail = ({ id }: { id: string }) => {
 	const router = useRouter();
@@ -23,6 +24,8 @@ const MessageDetail = ({ id }: { id: string }) => {
 	const [sendSignal, setSendSignal] = useState<boolean>(false);
 
 	const [currTopic, setCurrTopic] = useState<Topic>(undefined);
+
+	const [msgStage, dispatch] = useReducer(useMessageReducer, initialState);
 
 	const { isLoading, mutate, error } = useSWR<Topic>(`../api/topics/${id}`, get, {
 		onSuccess: (data) => {
@@ -56,12 +59,16 @@ const MessageDetail = ({ id }: { id: string }) => {
 					 dropShadow={boxAccentColor}
 					 borderRadius="xl"
 					 className="p-4 shadow">
-					<TopicMenu currTopicId={id} sendSignal={sendSignal} />
+					<TopicMenu currTopicId={id}
+							   sendSignal={sendSignal}
+							   dispatch={dispatch} />
 				</Box>
 
 				<Box w="800px">
 					<Grid templateRows="min-content 1fr" h="full">
-						<Box gap="2"
+						<Box as="b"
+							 fontSize="2xl"
+							 gap="2"
 							 width={["full", "full", "full", "fit-content"]}
 							 maxWidth={["full", "full", "full", "2xl"]}
 							 p="4"
@@ -73,7 +80,7 @@ const MessageDetail = ({ id }: { id: string }) => {
 
 						<MessageBox key={id} topicId={id} onMouseAction={setSendSignal} />
 
-						<InputBox currTopicId={id} />
+						<InputBox currTopicId={id} message={msgStage.message} dispatch={dispatch} />
 					</Grid>
 				</Box>
 			</HStack>

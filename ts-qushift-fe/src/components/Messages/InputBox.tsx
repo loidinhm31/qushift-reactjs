@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { Dispatch } from "react";
 import { post } from "../../lib/api";
 import { Input } from "@chakra-ui/input";
 import { FiSend } from "react-icons/fi";
@@ -8,24 +8,30 @@ import { useSession } from "next-auth/react";
 
 interface TopicProps {
     currTopicId: string;
+    message: string;
+    dispatch: Dispatch<any>;
 }
 
-export function InputBox({ currTopicId }: TopicProps) {
-    const [msg, setMsg] = useState("");
-
+export function InputBox({ currTopicId, message, dispatch }: TopicProps) {
     const { data: session } = useSession();
 
-    const { trigger } = useSWRMutation("/api/messages/send_message", post)
+    const { trigger } = useSWRMutation("/api/messages/send_message", post);
 
     const handleSubmit = () => {
-        if (msg.trim().length !== 0) {
+        if (message.trim().length !== 0) {
             const data = {
-                content: msg,
+                content: message,
                 receiver: "test-b", // TODO
                 sender: session.user.id,
-                topicId: currTopicId,
-            }
-            trigger(data).finally(() => setMsg(""));
+                topicId: currTopicId
+            };
+            trigger(data)
+                .finally(() => {
+                    // Finally, clear input
+                    dispatch({
+                        type: "sent_message"
+                    });
+                });
         }
     };
 
@@ -54,8 +60,13 @@ export function InputBox({ currTopicId }: TopicProps) {
                 type="input"
                 className="form-control"
                 name="msg"
-                value={msg}
-                onInput={(event: any) => setMsg(event.target.value)}
+                value={message}
+                onChange={(event: any) => {
+                    dispatch({
+                        type: "edited_message",
+                        message: event.target.value
+                    });
+                }}
                 onKeyDown={(event: any) => handleEnterSubmit(event)}
             />
         </HStack>
