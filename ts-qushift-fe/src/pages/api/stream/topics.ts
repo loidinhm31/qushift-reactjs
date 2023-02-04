@@ -27,7 +27,7 @@ const stream = async (req, res) => {
 
 	const session = await getSession({ req });
 
-	let eventSource = new EventSource(`		${process.env.API_BASE_URL}/topics/stream/${session.user.id}`);
+	let eventSource = new EventSource(`${process.env.API_BASE_URL}/topics/stream/${session.user.id}`);
 	eventSource.onopen = (e) => {
 		console.log("listen to sse endpoint now", e);
 	};

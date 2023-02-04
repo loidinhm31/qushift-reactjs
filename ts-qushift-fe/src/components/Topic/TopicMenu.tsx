@@ -20,10 +20,16 @@ export function TopicMenu({ currTopicId, sendSignal, dispatch }: TopicProps) {
 
 	const { data: session } = useSession();
 
+	const [topics, setTopics] = useState<Topic[]>();
+
 	const [msgMap, setMsgMap] = useState<Map<string, string>>(new Map());
 
 	// Get all topics
-	const { data: topics } = useSWRImmutable(`../api/topics/page`, get, { revalidateOnMount: true });
+	const { isLoading } = useSWRImmutable(`../api/topics/page`, get, {
+		onSuccess: (data) => {
+			setTopics(data);
+		}, revalidateOnMount: true
+	});
 
 	const { trigger } = useSWRMutation("/api/messages/send_signal", post);
 
@@ -46,25 +52,31 @@ export function TopicMenu({ currTopicId, sendSignal, dispatch }: TopicProps) {
 	// Listening the incoming notify
 	useEffect(() => {
 		if (topic) {
-			console.log(`Updating notification for receiver on topic ${topic.id}...`);
+			if (topics && topic.isNew) {
+				if (!topics.some((t) => t.id === topic.originId)) {
+					console.log(`Adding new topic ${topic.originId}`);
+					setTopics([topic, ...topics]);
+				}
+			} else if (!topic.isNew) {
+				console.log(`Updating notification for receiver on topic ${topic.originId}...`);
+				const user = topic.members?.find(member => member.userId === session.user.id) as Member;
 
-			const user = topic.members?.find(member => member.userId === session.user.id) as Member;
-
-			if (!user.checkSeen) {
-				if (msgMap.has(topic.id)) {
-					const countSeen = user.notSeenCount;
-					if (countSeen > 99) {
-						msgMap.set(topic.id, "99+");
+				if (!user.checkSeen) {
+					if (msgMap.has(topic.originId)) {
+						const countSeen = user.notSeenCount;
+						if (countSeen > 99) {
+							msgMap.set(topic.originId, "99+");
+						} else {
+							msgMap.set(topic.originId, countSeen.toString());
+						}
 					} else {
-						msgMap.set(topic.id, countSeen.toString());
+						msgMap.set(topic.originId, user.notSeenCount.toString());
 					}
 				} else {
-					msgMap.set(topic.id, user.notSeenCount.toString());
+					msgMap.set(topic.originId, "0");
 				}
-			} else {
-				msgMap.set(topic.id, "0");
+				setMsgMap(new Map(msgMap));
 			}
-			setMsgMap(new Map(msgMap));
 		}
 	}, [topic, currTopicId]);
 
@@ -78,28 +90,31 @@ export function TopicMenu({ currTopicId, sendSignal, dispatch }: TopicProps) {
 
 				trigger({ currTopicId })
 					.finally(() => {
-					msgMap.set(currTopicId as string, "0");
-				});
+						msgMap.set(currTopicId as string, "0");
+					});
 			}
 		}
 	}, [sendSignal])
 
-	if (!topics) {
-		return <CircularProgress isIndeterminate />;
+	if (!session) {
+		return;
 	}
 
 	return (
 		<Box>
 			<CreatableTopicElement>
-				<Box/>
+				<Box />
 			</CreatableTopicElement>
 			<Box overflowY="auto" height="700px"
-				className="overflow-y-auto p-3 w-full">
+				 className="overflow-y-auto p-3 w-full">
+
+				{isLoading && <CircularProgress isIndeterminate />}
+
 				<List className="grid grid-cols-3 col-span-3 sm:flex sm:flex-col gap-2">
-                    {topics && (topics as Topic[]).map((item) => (
+					{topics && (topics as Topic[]).map((item, index) => (
 						<ListItem
 							onClick={() => goToTopic(item.id)}
-							key={`${item.id}`}
+							key={`${item.id}-${index}`}
 							style={{ textDecoration: "none" }}>
 
 							<Button
