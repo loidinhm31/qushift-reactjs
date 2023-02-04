@@ -1,14 +1,12 @@
 package com.flo.qushift.service;
 
-import com.flo.qushift.document.BaseDocument;
-import com.flo.qushift.document.Message;
-import com.flo.qushift.document.StreamMessage;
-import com.flo.qushift.document.Topic;
+import com.flo.qushift.document.*;
 import com.flo.qushift.dto.MessageDto;
 import com.flo.qushift.model.Member;
 import com.flo.qushift.repository.MessageStreamRepository;
 import com.flo.qushift.repository.ReactiveMessageRepository;
 import com.flo.qushift.repository.ReactiveTopicRepository;
+import com.flo.qushift.repository.TopicStreamRepository;
 import lombok.RequiredArgsConstructor;
 import org.bson.types.ObjectId;
 import org.springframework.data.domain.PageRequest;
@@ -34,6 +32,8 @@ public class MessageService {
 
     private final ReactiveTopicRepository reactiveTopicRepository;
 
+    private final TopicStreamRepository topicStreamRepository;
+
     public Mono<StreamMessage> saveMessage(MessageDto messageDto) {
         // Update information for topic
         Mono<Topic> topicMono = reactiveTopicRepository.findById(messageDto.getTopicId());
@@ -58,7 +58,17 @@ public class MessageService {
                                 member.setNotSeenCount(member.getNotSeenCount() + 1);
                             }
                         });
-                        reactiveTopicRepository.save(topic).subscribe();
+                        reactiveTopicRepository.save(topic).subscribeOn(Schedulers.boundedElastic())
+                                .subscribe(t -> {
+                                    // Also save in topics stream
+                                    StreamTopic streamTopic = StreamTopic.builder()
+                                            .originId(t.getId())
+                                            .name(t.getName())
+                                            .members(t.getMembers())
+                                            .createdAt(t.getCreatedAt())
+                                            .build();
+                                    topicStreamRepository.save(streamTopic).subscribe();
+                                });
 
                         // Save main message
                         Message message = Message.builder()
@@ -92,8 +102,7 @@ public class MessageService {
 
     public Flux<StreamMessage> getStreamMessagesByTopic(String topicId) {
         List<String> values = List.of(topicId, "STREAM_INIT"); // init value for mongo capped collection to avoid tailable cursor is closed
-        return messageStreamRepository.findByTopicIdIn(values)
-                .subscribeOn(Schedulers.boundedElastic());
+        return messageStreamRepository.findByTopicIdIn(values);
     }
 
     public Flux<Message> getPaginatedMessages(String topicId, int start, int pageSize, String userId) {

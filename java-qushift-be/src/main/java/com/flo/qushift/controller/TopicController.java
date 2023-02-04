@@ -1,5 +1,7 @@
 package com.flo.qushift.controller;
 
+import com.flo.qushift.document.Message;
+import com.flo.qushift.document.StreamTopic;
 import com.flo.qushift.document.Topic;
 import com.flo.qushift.dto.TopicDto;
 import com.flo.qushift.service.TopicService;
@@ -11,6 +13,8 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/topics")
@@ -19,15 +23,19 @@ public class TopicController {
     private final TopicService topicService;
 
     @PostMapping
-    public Mono<Topic> createChannel(@RequestBody TopicDto topicDto) {
-        return topicService.saveChannel(topicDto);
+    public Mono<ResponseEntity<StreamTopic>> createTopic(@RequestBody TopicDto topicDto) {
+        return topicService.saveTopic(topicDto)
+                .map(ResponseEntity::ok);
     }
 
-    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public Flux<Topic> retrieveTopics(@RequestParam String userId,
-                                      @RequestParam Integer start,
-                                      @RequestParam Integer size) {
-        return topicService.getPaginatedTopics(userId, start, size);
+    @GetMapping(produces = MediaType.APPLICATION_NDJSON_VALUE)
+    public Mono<ResponseEntity<List<Topic>>> retrieveTopics(@RequestParam Integer start,
+                                                              @RequestParam Integer size,
+                                                              @RequestParam String userId) {
+        // TODO remove userId when not using
+        return topicService.getPaginatedTopics(start, size, userId)
+                .collectList()
+                .map(ResponseEntity::ok);
     }
 
     @GetMapping(value = "/{topicId}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -37,7 +45,7 @@ public class TopicController {
     }
 
     @GetMapping(value = "/stream/{receiverId}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public Flux<Topic> retrieveMessagesForReceiver(@PathVariable String receiverId) {
+    public Flux<StreamTopic> retrieveMessagesForReceiver(@PathVariable String receiverId) {
         return topicService.getStreamMessagesByReceiver(receiverId);
     }
 
