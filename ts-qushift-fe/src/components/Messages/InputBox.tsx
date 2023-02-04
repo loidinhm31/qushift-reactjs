@@ -24,7 +24,7 @@ export function InputBox({ currTopicId, message, dispatch }: TopicProps) {
                 receiver: "test-b", // TODO
                 sender: session.user.id,
                 topicId: currTopicId
-            };
+            }
             trigger(data)
                 .finally(() => {
                     // Finally, clear input
