@@ -101,8 +101,8 @@ public class MessageService {
     }
 
     public Flux<StreamMessage> getStreamMessagesByTopic(String topicId) {
-        List<String> values = List.of(topicId, "STREAM_INIT"); // init value for mongo capped collection to avoid tailable cursor is closed
-        return messageStreamRepository.findByTopicIdIn(values);
+        return messageStreamRepository.findAllByTopicIdNotNull()
+                .filter(streamMessage -> streamMessage.getTopicId().equals(topicId));
     }
 
     public Flux<Message> getPaginatedMessages(String topicId, int start, int pageSize, String userId) {

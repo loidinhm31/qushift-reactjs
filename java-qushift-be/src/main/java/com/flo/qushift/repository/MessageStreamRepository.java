@@ -16,6 +16,9 @@ public interface MessageStreamRepository extends ReactiveMongoRepository<StreamM
     Flux<StreamMessage> findByTopicIdIn(List<String> values);
 
     @Tailable
+    Flux<StreamMessage> findAllByTopicIdNotNull();
+
+    @Tailable
     @Query(value = "{$or: [{'topicId': 'INIT_STREAM'}, " +
             "              {'receiver': {$in: [?0]}}, " +
             "              {'sender': {$in: [?1]}}]}")

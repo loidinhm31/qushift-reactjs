@@ -60,14 +60,15 @@ export function MessageBox(messageProps: MessageProps) {
 
 	// Listening the incoming message
 	useEffect(() => {
-		if (incomingMessage && messages.length > 0) {
-			if (!messages.some((m: Message) => m.id === incomingMessage.id)) {
+		if (incomingMessage) {
+			if (messages.length == 0 || !messages.some((m: Message) => m.id === incomingMessage.id)) {
 				console.log(`Updating stream for id ${messageProps.topicId}...`);
 				setMessages([...messages, incomingMessage]);
 			}
 		}
 	}, [incomingMessage]);
 
+	// Update page and set effect
 	useEffect(() => {
 		if (currPage == 0) {
 			scrollToBottom();
