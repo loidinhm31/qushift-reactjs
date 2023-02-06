@@ -3,8 +3,13 @@ package server
 import (
 	"github.com/gin-gonic/gin"
 	authHttp "go-qushift-auth-be/internal/auth/delivery/http"
-	authRepository "go-qushift-auth-be/internal/auth/repository"
+	userHttp "go-qushift-auth-be/internal/users/delivery/http"
+
 	authService "go-qushift-auth-be/internal/auth/service"
+	userService "go-qushift-auth-be/internal/users/service"
+
+	"go-qushift-auth-be/internal/middlewares"
+	usersRepository "go-qushift-auth-be/internal/users/repository"
 	"log"
 	"net/http"
 	"time"
@@ -12,20 +17,29 @@ import (
 
 func (s *Server) MapHandlers(g *gin.Engine) error {
 	// Init repositories
-	aRepo := authRepository.NewUserRepository(s.db)
+	uRepo := usersRepository.NewUserRepository(s.db)
 
 	// Init service
-	aService := authService.NewAuthService(aRepo)
+	aService := authService.NewAuthService(uRepo, []byte(s.cfg.Server.SigningKey), s.cfg.Server.TokenTTL)
+	uService := userService.NewUserService(aService, uRepo)
 
 	// Init handler
 	aHandler := authHttp.NewAuthHandler(aService)
+	uHandler := userHttp.NewUserHandler(uService)
 
-	authorizedV1 := g.Group("/api/v1")
+	// Init middlewares
+	mw := middlewares.NewMiddlewareManager(aService)
 
-	health := authorizedV1.Group("/health")
-	authGroup := authorizedV1.Group("/auth")
+	apiV1 := g.Group("/api/v1")
+
+	health := apiV1.Group("/health")
+	authGroup := apiV1.Group("/auth")
+	userGroup := apiV1.Group("/users")
+
+	userGroup.Use(mw.JWTValidation())
 
 	authHttp.MapAuthRoutes(authGroup, aHandler)
+	userHttp.MapUserRoutes(userGroup, uHandler)
 
 	health.GET("", func(c *gin.Context) {
 		log.Printf("Health check: %d", time.Now().Unix())

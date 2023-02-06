@@ -2,8 +2,8 @@ package repository
 
 import (
 	"context"
-	"go-qushift-auth-be/internal/auth"
 	"go-qushift-auth-be/internal/models"
+	"go-qushift-auth-be/internal/users"
 	"gorm.io/gorm"
 	"strings"
 )
@@ -12,7 +12,7 @@ type userRepository struct {
 	db *gorm.DB
 }
 
-func NewUserRepository(db *gorm.DB) auth.UserRepository {
+func NewUserRepository(db *gorm.DB) users.UserRepository {
 	return &userRepository{db: db}
 }
 

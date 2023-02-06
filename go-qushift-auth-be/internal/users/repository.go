@@ -1,11 +1,9 @@
-package auth
+package users
 
 import (
 	"context"
 	"go-qushift-auth-be/internal/models"
 )
-
-const CtxUserKey = "userId"
 
 type UserRepository interface {
 	CreateUser(ctx context.Context, user *models.User) error

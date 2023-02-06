@@ -12,17 +12,16 @@ import (
 type Config struct {
 	Server   ServerConfig
 	Postgres PostgresConfig
-	Metrics  Metrics
-	Logger   Logger
 }
 
 // ServerConfig Server config struct
 type ServerConfig struct {
 	AppVersion        string
 	Port              string
-	PprofPort         string
 	Mode              string
 	JwtSecretKey      string
+	SigningKey        string
+	TokenTTL          int64
 	CookieName        string
 	ReadTimeout       time.Duration
 	WriteTimeout      time.Duration
@@ -30,15 +29,6 @@ type ServerConfig struct {
 	CtxDefaultTimeout time.Duration
 	CSRF              bool
 	Debug             bool
-}
-
-// Logger config
-type Logger struct {
-	Development       bool
-	DisableCaller     bool
-	DisableStacktrace bool
-	Encoding          string
-	Level             string
 }
 
 // PostgresConfig Postgresql config
@@ -50,17 +40,6 @@ type PostgresConfig struct {
 	PostgresqlDbname   string
 	PostgresqlSSLMode  bool
 	PgDriver           string
-}
-
-// Metrics config
-type Metrics struct {
-	URL         string
-	ServiceName string
-}
-
-// Store config
-type Store struct {
-	ImagesFolder string
 }
 
 // LoadConfig Load config file from given path

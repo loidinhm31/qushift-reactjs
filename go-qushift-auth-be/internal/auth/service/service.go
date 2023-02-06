@@ -7,7 +7,9 @@ import (
 	"github.com/google/uuid"
 	"go-qushift-auth-be/internal/auth"
 	"go-qushift-auth-be/internal/dto"
+	"go-qushift-auth-be/internal/errors"
 	"go-qushift-auth-be/internal/models"
+	"go-qushift-auth-be/internal/users"
 	"strings"
 	"time"
 )
@@ -19,58 +21,51 @@ type AuthClaims struct {
 }
 
 type authService struct {
-	authRepo       auth.UserRepository
-	hashSalt       string
+	authRepo       users.UserRepository
 	signingKey     []byte
 	expireDuration time.Duration
 }
 
-func NewAuthService(userRepo auth.UserRepository) auth.Service {
+func NewAuthService(userRepo users.UserRepository, signingKey []byte, tokenTTL int64) auth.Service {
 	return &authService{
-		authRepo: userRepo,
+		authRepo:       userRepo,
+		signingKey:     signingKey,
+		expireDuration: time.Second * time.Duration(tokenTTL),
 	}
 }
 
-func (a *authService) SignUp(ctx context.Context, username, password string) (*dto.UserDto, error) {
-	fmtusername := strings.ToLower(username)
-	euser, _ := a.authRepo.GetUserByUsername(ctx, fmtusername)
+func (a *authService) SignUp(ctx context.Context, userDto *dto.UserDto) error {
+	fmtUsername := strings.ToLower(userDto.Username)
+	euser, _ := a.authRepo.GetUserByUsername(ctx, fmtUsername)
 
 	if euser != nil {
-		return nil, auth.ErrUserExisted
+		return errors.ErrUserExisted
 	}
 	user := &models.User{
-		UserID:   uuid.New().String(),
-		Username: fmtusername,
-		Password: password,
+		UserID:    uuid.New().String(),
+		Username:  fmtUsername,
+		Password:  userDto.Password,
+		FirstName: userDto.FirstName,
+		LastName:  userDto.LastName,
 	}
 	user.HashPassword()
 	err := a.authRepo.CreateUser(ctx, user)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	result, err := a.authRepo.GetUserByUsername(ctx, username)
-	if err != nil {
-		return nil, err
-	}
-
-	return &dto.UserDto{
-		UserId:   result.UserID,
-		Username: result.Username,
-		Password: result.Password,
-	}, nil
+	return nil
 }
 
 func (a *authService) SignIn(ctx context.Context, username, password string) (string, error) {
 	user, _ := a.authRepo.GetUserByUsername(ctx, username)
 	if user == nil {
-		return "", auth.ErrUserNotFound
+		return "", errors.ErrNotFound
 	}
 
 	if !user.ComparePassword(password) {
-		return "", auth.ErrWrongPassword
+		return "", errors.ErrWrongPassword
 	}
-
 	claims := AuthClaims{
 		Username: user.Username,
 		UserId:   user.UserID,
@@ -102,5 +97,5 @@ func (a *authService) ParseToken(ctx context.Context, accessToken string) (strin
 		return claims.UserId, nil
 	}
 
-	return "", auth.ErrInvalidAccessToken
+	return "", errors.ErrInvalidAccessToken
 }

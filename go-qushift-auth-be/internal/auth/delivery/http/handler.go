@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"go-qushift-auth-be/internal/auth"
 	"go-qushift-auth-be/internal/dto"
+	"go-qushift-auth-be/internal/errors"
 	"go-qushift-auth-be/pkg/utils"
 	"net/http"
 )
@@ -34,15 +35,21 @@ func (h *authHandler) SignUp() gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"message": "error",
 			})
+			c.Abort()
 			return
 		}
 
-		user, err := h.authService.SignUp(c.Request.Context(), user.Username, user.Password)
+		err := h.authService.SignUp(c.Request.Context(), user)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, err.Error())
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"message": err.Error(),
+			})
+			c.Abort()
 			return
 		}
-		c.JSON(http.StatusCreated, user)
+		c.JSON(http.StatusCreated, gin.H{
+			"message": "created",
+		})
 	}
 }
 
@@ -54,19 +61,29 @@ func (h *authHandler) SignIn() gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"message": "error",
 			})
+			c.Abort()
 			return
 		}
 		token, err := h.authService.SignIn(c.Request.Context(), user.Username, user.Password)
 		if err != nil {
-			if err == auth.ErrUserNotFound {
-				c.JSON(http.StatusUnauthorized, err.Error())
+			if err == errors.ErrNotFound {
+				c.JSON(http.StatusUnauthorized, gin.H{
+					"message": err.Error(),
+				})
+				c.Abort()
 				return
 			}
-			if err == auth.ErrWrongPassword {
-				c.JSON(http.StatusUnauthorized, err.Error())
+			if err == errors.ErrWrongPassword {
+				c.JSON(http.StatusUnauthorized, gin.H{
+					"message": err.Error(),
+				})
+				c.Abort()
 				return
 			}
-			c.JSON(http.StatusInternalServerError, err.Error())
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"message": err.Error(),
+			})
+			c.Abort()
 			return
 		}
 		c.JSON(http.StatusOK, dto.UserWithToken{User: user, Token: token})

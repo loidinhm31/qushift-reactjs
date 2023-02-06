@@ -9,6 +9,8 @@ type User struct {
 	UserID    string `gorm:"primary_key"`
 	Username  string
 	Password  string
+	FirstName string
+	LastName  string
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
