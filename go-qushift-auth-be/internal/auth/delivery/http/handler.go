@@ -89,3 +89,20 @@ func (h *authHandler) SignIn() gin.HandlerFunc {
 		c.JSON(http.StatusOK, dto.UserWithToken{User: user, Token: token})
 	}
 }
+
+func (h *authHandler) VerifyToken() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		err := h.authService.VerifyToken(c.Request.Context(), c)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": err.Error(),
+			})
+			c.Abort()
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"message": "ok",
+		})
+	}
+}

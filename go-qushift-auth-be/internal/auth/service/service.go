@@ -3,13 +3,14 @@ package service
 import (
 	"context"
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
 	"github.com/google/uuid"
 	"go-qushift-auth-be/internal/auth"
 	"go-qushift-auth-be/internal/dto"
 	"go-qushift-auth-be/internal/errors"
+	"go-qushift-auth-be/internal/middlewares"
 	"go-qushift-auth-be/internal/models"
-	"go-qushift-auth-be/internal/users"
 	"strings"
 	"time"
 )
@@ -21,14 +22,14 @@ type AuthClaims struct {
 }
 
 type authService struct {
-	authRepo       users.UserRepository
+	userRepository auth.UserRepository
 	signingKey     []byte
 	expireDuration time.Duration
 }
 
-func NewAuthService(userRepo users.UserRepository, signingKey []byte, tokenTTL int64) auth.Service {
+func NewAuthService(userRepository auth.UserRepository, signingKey []byte, tokenTTL int64) auth.Service {
 	return &authService{
-		authRepo:       userRepo,
+		userRepository: userRepository,
 		signingKey:     signingKey,
 		expireDuration: time.Second * time.Duration(tokenTTL),
 	}
@@ -36,7 +37,7 @@ func NewAuthService(userRepo users.UserRepository, signingKey []byte, tokenTTL i
 
 func (a *authService) SignUp(ctx context.Context, userDto *dto.UserDto) error {
 	fmtUsername := strings.ToLower(userDto.Username)
-	euser, _ := a.authRepo.GetUserByUsername(ctx, fmtUsername)
+	euser, _ := a.userRepository.GetUserByUsername(ctx, fmtUsername)
 
 	if euser != nil {
 		return errors.ErrUserExisted
@@ -49,7 +50,7 @@ func (a *authService) SignUp(ctx context.Context, userDto *dto.UserDto) error {
 		LastName:  userDto.LastName,
 	}
 	user.HashPassword()
-	err := a.authRepo.CreateUser(ctx, user)
+	err := a.userRepository.CreateUser(ctx, user)
 	if err != nil {
 		return err
 	}
@@ -58,7 +59,7 @@ func (a *authService) SignUp(ctx context.Context, userDto *dto.UserDto) error {
 }
 
 func (a *authService) SignIn(ctx context.Context, username, password string) (string, error) {
-	user, _ := a.authRepo.GetUserByUsername(ctx, username)
+	user, _ := a.userRepository.GetUserByUsername(ctx, username)
 	if user == nil {
 		return "", errors.ErrNotFound
 	}
@@ -98,4 +99,23 @@ func (a *authService) ParseToken(ctx context.Context, accessToken string) (strin
 	}
 
 	return "", errors.ErrInvalidAccessToken
+}
+
+func (a *authService) VerifyToken(ctx context.Context, c *gin.Context) error {
+	userId, exist := c.Get(middlewares.CtxUserKey)
+	fmt.Println(userId)
+	if !exist {
+		return errors.ErrInvalidAccessToken
+	}
+
+	result, err := a.userRepository.GetUserById(ctx, fmt.Sprintf("%s", userId))
+	if err != nil {
+		return errors.ErrNotFound
+	}
+
+	if result.UserID != userId {
+		return errors.ErrNotFound
+	}
+
+	return nil
 }

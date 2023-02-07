@@ -1,7 +1,6 @@
 package middlewares
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"go-qushift-auth-be/internal/errors"
 	"net/http"
@@ -23,9 +22,7 @@ func (mw *MiddlewareManager) JWTValidation() gin.HandlerFunc {
 		}
 
 		extractHeader := authHeader[0]
-
 		headerParts := strings.Split(extractHeader, " ")
-		fmt.Println(headerParts)
 		if len(headerParts) != 2 {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"message": "Unauthorized",
