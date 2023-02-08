@@ -19,7 +19,8 @@ type ServerConfig struct {
 	AppVersion        string
 	Port              string
 	Mode              string
-	JwtSecretKey      string
+	ClientId          string
+	ClientSecret      string
 	SigningKey        string
 	TokenTTL          int64
 	CookieName        string

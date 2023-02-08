@@ -7,8 +7,9 @@ import (
 
 // MapAuthRoutes Map auth routes
 func MapAuthRoutes(authGroup *gin.RouterGroup, h auth.Handler) {
-	authGroup.POST("/signup", h.SignUp())
-	authGroup.GET("/verify", h.VerifyToken())
-	// authGroup.POST("/logout", h.Logout())
 	authGroup.GET("/ping", h.Ping())
+	authGroup.POST("/signup", h.SignUp())
+	authGroup.POST("/login", h.Login())
+	authGroup.POST("/verify", h.VerifyToken())
+	// authGroup.POST("/logout", h.Logout())
 }

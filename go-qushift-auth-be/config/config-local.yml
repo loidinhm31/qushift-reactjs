@@ -2,7 +2,8 @@ server:
   AppVersion: 1.0.0
   Port: :5000
   Mode: Development
-  JwtSecretKey: secretkey
+  ClientId: QSHIFT_API_SECRET
+  ClientSecret: ofBYMfWcT48VYenq8kh0jzdYegxxSPAZ
   SigningKey: QUSHIFT
   TokenTTL: 86400
   CookieName: jwt-token

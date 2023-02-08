@@ -9,7 +9,6 @@ import (
 	"go-qushift-auth-be/internal/auth"
 	"go-qushift-auth-be/internal/dto"
 	"go-qushift-auth-be/internal/errors"
-	"go-qushift-auth-be/internal/middlewares"
 	"go-qushift-auth-be/internal/models"
 	"strings"
 	"time"
@@ -25,13 +24,23 @@ type authService struct {
 	userRepository auth.UserRepository
 	signingKey     []byte
 	expireDuration time.Duration
+	clientId       string
+	clientSecret   string
 }
 
-func NewAuthService(userRepository auth.UserRepository, signingKey []byte, tokenTTL int64) auth.Service {
+func NewAuthService(
+	userRepository auth.UserRepository,
+	signingKey []byte,
+	tokenTTL int64,
+	clientId string,
+	clientSecret string,
+) auth.Service {
 	return &authService{
 		userRepository: userRepository,
 		signingKey:     signingKey,
 		expireDuration: time.Second * time.Duration(tokenTTL),
+		clientId:       clientId,
+		clientSecret:   clientSecret,
 	}
 }
 
@@ -101,21 +110,22 @@ func (a *authService) ParseToken(ctx context.Context, accessToken string) (strin
 	return "", errors.ErrInvalidAccessToken
 }
 
-func (a *authService) VerifyToken(ctx context.Context, c *gin.Context) error {
-	userId, exist := c.Get(middlewares.CtxUserKey)
-	fmt.Println(userId)
-	if !exist {
-		return errors.ErrInvalidAccessToken
+func (a *authService) VerifyToken(ctx context.Context, c *gin.Context, introspectForm *dto.Introspect) (*models.User, error) {
+	token := introspectForm.Token
+
+	if !(introspectForm.ClientId == a.clientId &&
+		introspectForm.ClientSecret == a.clientSecret) {
+		return nil, errors.ErrInvalidClient
 	}
 
-	result, err := a.userRepository.GetUserById(ctx, fmt.Sprintf("%s", userId))
+	userId, err := a.ParseToken(ctx, token)
 	if err != nil {
-		return errors.ErrNotFound
+		return nil, errors.ErrInvalidAccessToken
 	}
 
-	if result.UserID != userId {
-		return errors.ErrNotFound
+	user, err := a.userRepository.GetUserById(ctx, fmt.Sprintf("%s", userId))
+	if err != nil {
+		return nil, errors.ErrNotFound
 	}
-
-	return nil
+	return user, nil
 }
