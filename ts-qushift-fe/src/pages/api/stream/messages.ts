@@ -1,5 +1,6 @@
 import nextConnect from "next-connect";
 import EventSource from "eventsource";
+import { withoutRole } from "../../../lib/auth";
 
 const handler = nextConnect();
 
@@ -21,12 +22,18 @@ const sseMiddleware = (req, res, next) => {
 	next();
 };
 
-const stream = async (req, res) => {
+const stream = withoutRole("banned", async (req, res, token) => {
 	console.log("connect to SSE message stream");
 
 	const { topicId } = req.query;
 
-	let eventSource = new EventSource(`${process.env.API_BASE_URL}/messages/stream?topicId=${topicId}`);
+	const headers = {
+		headers: {
+			"Authorization": `Bearer ${token.accessToken}`
+		}
+	};
+
+	let eventSource = new EventSource(`${process.env.API_BASE_URL}/messages/stream?topicId=${topicId}`, headers);
 	eventSource.onopen = (e) => {
 		console.log("listen to sse endpoint now", e);
 	};
@@ -44,7 +51,7 @@ const stream = async (req, res) => {
 		eventSource = null;
 		res.end();
 	});
-};
+});
 
 // Stream API Data
 handler.get(sseMiddleware, stream);

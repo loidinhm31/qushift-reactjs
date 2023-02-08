@@ -5,7 +5,7 @@ import { useRouter } from "next/router";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { FaBug, FaEnvelope } from "react-icons/fa";
+import { FaBug, FaEnvelope, FaUser } from "react-icons/fa";
 import { Footer } from "src/components/Footer";
 import { Header } from "src/components/Header";
 import { AuthLayout } from "../../components/AuthLayout";
@@ -14,26 +14,16 @@ import { Role, RoleSelect } from "../../components/RoleSelect";
 
 export type SignInErrorTypes =
 	| "Signin"
-	| "OAuthSignin"
-	| "OAuthCallback"
-	| "OAuthCreateAccount"
 	| "EmailCreateAccount"
 	| "Callback"
-	| "OAuthAccountNotLinked"
-	| "EmailSignin"
 	| "CredentialsSignin"
 	| "SessionRequired"
 	| "default";
 
 const errorMessages: Record<SignInErrorTypes, string> = {
 	Signin: "Try signing in with a different account.",
-	OAuthSignin: "Try signing in with a different account.",
-	OAuthCallback: "Try signing in with the same account you used originally.",
-	OAuthCreateAccount: "Try signing in with a different account.",
 	EmailCreateAccount: "Try signing in with a different account.",
 	Callback: "Try signing in with a different account.",
-	OAuthAccountNotLinked: "To confirm your identity, sign in with the same account you used originally.",
-	EmailSignin: "The e-mail could not be sent.",
 	CredentialsSignin: "Sign in failed. Check the details you provided are correct.",
 	SessionRequired: "Please sign in to access this page.",
 	default: "Unable to sign in."
@@ -45,7 +35,7 @@ interface SigninProps {
 
 function Signin({ providers }: SigninProps) {
 	const router = useRouter();
-	const { credentials } = providers;
+	const { debug, server } = providers;
 	const [error, setError] = useState("");
 
 	useEffect(() => {
@@ -70,8 +60,9 @@ function Signin({ providers }: SigninProps) {
 			</Head>
 			<AuthLayout>
 				<Stack spacing="2">
-					{credentials && <DebugSigninForm credentials={credentials} bgColorClass={bgColorClass} />}
+					{debug && <DebugSigninForm credentials={debug} bgColorClass={bgColorClass} />}
 
+					{server && <SigninForm credentials={server} bgColorClass={bgColorClass} />}
 				</Stack>
 				<hr className="mt-14 mb-4 h-px bg-gray-200 border-0" />
 
@@ -107,6 +98,36 @@ const SigninButton = (props: ButtonProps) => {
 			color="white"
 			{...props}
 		></Button>
+	);
+};
+
+interface SigninFormData {
+	username: string;
+	password: string;
+}
+
+const SigninForm = ({ credentials, bgColorClass }: { credentials: ClientSafeProvider; bgColorClass: string }) => {
+	const { register, handleSubmit } = useForm<SigninFormData>();
+
+	function signinWithCredentials(data: SigninFormData) {
+		signIn(credentials.id, {
+			callbackUrl: "/dashboard",
+			...data
+		});
+	}
+
+	return (
+		<form
+			onSubmit={handleSubmit(signinWithCredentials)}
+			className="rounded-md p-4 relative"
+		>
+			<Stack>
+				<Input variant="outline" size="lg" placeholder="Username" {...register("username")} />
+				<Input variant="outline" size="lg" placeholder="Password" {...register("password")} />
+
+				<SigninButton leftIcon={<FaUser />}>Continue with User</SigninButton>
+			</Stack>
+		</form>
 	);
 };
 

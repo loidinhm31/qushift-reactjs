@@ -1,11 +1,12 @@
 import * as process from "process";
 import { withoutRole } from "../../../lib/auth";
 
-const handler = withoutRole("banned", async (req, res) => {
+const handler = withoutRole("banned", async (req, res, token) => {
 	const { topicName, topicMembers } = req.body;
 
 	const headers = new Headers();
 	headers.append("Content-Type", "application/json");
+	headers.append("Authorization", `Bearer ${token.accessToken}`);
 
 	const requestOptions = {
 		method: "POST",
