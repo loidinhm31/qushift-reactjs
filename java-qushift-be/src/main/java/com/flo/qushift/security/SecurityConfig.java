@@ -1,4 +1,4 @@
-package com.flo.qushift.config;
+package com.flo.qushift.security;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
+import org.springframework.security.oauth2.server.resource.introspection.ReactiveOpaqueTokenIntrospector;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.reactive.CorsConfigurationSource;
@@ -19,9 +20,17 @@ public class SecurityConfig {
     @Value("${client.frontend-endpoint}")
     private String clientEndpoint;
 
+    @Value("${spring.security.oauth2.resourceserver.opaque-token.introspection-uri}")
+    private String introspectionUri;
+
+    @Value("${spring.security.oauth2.resourceserver.opaque-token.client-id}")
+    private String clientId;
+
+    @Value("${spring.security.oauth2.resourceserver.opaque-token.client-secret}")
+    private String clientSecret;
+
     @Bean
     public SecurityWebFilterChain springSecurityFilterChain(final ServerHttpSecurity http) {
-
         http
                 .cors().and().csrf()
                 .disable();
@@ -31,7 +40,13 @@ public class SecurityConfig {
                 .pathMatchers("/swagger-ui.html").permitAll()
                 // Health check
                 .pathMatchers(HttpMethod.GET, "/actuator/**").permitAll()
-                .anyExchange().permitAll()
+                .and()
+                .authorizeExchange().anyExchange().authenticated()
+                .and()
+                .oauth2ResourceServer(oauth2 -> oauth2
+                        .opaqueToken(opaqueToken -> opaqueToken
+                                .introspector(introspector())))
+
         ;
         return http.build();
     }
@@ -50,5 +65,12 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", configuration);
 
         return source;
+    }
+
+    @Bean
+    public ReactiveOpaqueTokenIntrospector introspector() {
+        CustomAuthoritiesOpaqueTokenIntrospector customAuthoritiesOpaqueTokenIntrospector = new CustomAuthoritiesOpaqueTokenIntrospector();
+        customAuthoritiesOpaqueTokenIntrospector.setDelegate(introspectionUri, clientId, clientSecret);
+        return customAuthoritiesOpaqueTokenIntrospector;
     }
 }
