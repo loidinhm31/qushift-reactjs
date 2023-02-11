@@ -2,7 +2,7 @@ package http
 
 import (
 	"github.com/gin-gonic/gin"
-	"go-qushift-auth-be/internal/auth"
+	"go-qushift-auth-service/internal/auth"
 )
 
 // MapAuthRoutes Map auth routes

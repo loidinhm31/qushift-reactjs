@@ -1,6 +1,6 @@
 package middlewares
 
-import "go-qushift-auth-be/internal/auth"
+import "go-qushift-auth-service/internal/auth"
 
 type MiddlewareManager struct {
 	authService auth.Service

@@ -2,8 +2,8 @@ package postgres
 
 import (
 	"fmt"
-	"go-qushift-auth-be/config"
-	"go-qushift-auth-be/internal/models"
+	"go-qushift-auth-service/config"
+	"go-qushift-auth-service/internal/models"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"

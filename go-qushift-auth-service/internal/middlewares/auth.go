@@ -2,7 +2,7 @@ package middlewares
 
 import (
 	"github.com/gin-gonic/gin"
-	"go-qushift-auth-be/internal/errors"
+	"go-qushift-auth-service/internal/errors"
 	"net/http"
 	"strings"
 )

@@ -1,4 +1,4 @@
-module go-qushift-auth-be
+module go-qushift-auth-service
 
 go 1.19
 

@@ -3,8 +3,8 @@ package auth
 import (
 	"context"
 	"github.com/gin-gonic/gin"
-	"go-qushift-auth-be/internal/dto"
-	"go-qushift-auth-be/internal/models"
+	"go-qushift-auth-service/internal/dto"
+	"go-qushift-auth-service/internal/models"
 )
 
 type Service interface {

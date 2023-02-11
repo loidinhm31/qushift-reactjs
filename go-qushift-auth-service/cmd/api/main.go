@@ -1,10 +1,10 @@
 package main
 
 import (
-	"go-qushift-auth-be/config"
-	"go-qushift-auth-be/internal/server"
-	database "go-qushift-auth-be/pkg/database/postgres"
-	"go-qushift-auth-be/pkg/utils"
+	"go-qushift-auth-service/config"
+	"go-qushift-auth-service/internal/server"
+	database "go-qushift-auth-service/pkg/database/postgres"
+	"go-qushift-auth-service/pkg/utils"
 	"log"
 	"os"
 )

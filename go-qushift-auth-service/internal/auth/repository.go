@@ -2,7 +2,7 @@ package auth
 
 import (
 	"context"
-	"go-qushift-auth-be/internal/models"
+	"go-qushift-auth-service/internal/models"
 )
 
 type UserRepository interface {

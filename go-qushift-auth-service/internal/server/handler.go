@@ -2,9 +2,9 @@ package server
 
 import (
 	"github.com/gin-gonic/gin"
-	authHttp "go-qushift-auth-be/internal/auth/delivery/http"
-	usersRepository "go-qushift-auth-be/internal/auth/repository"
-	authService "go-qushift-auth-be/internal/auth/service"
+	authHttp "go-qushift-auth-service/internal/auth/delivery/http"
+	usersRepository "go-qushift-auth-service/internal/auth/repository"
+	authService "go-qushift-auth-service/internal/auth/service"
 	"log"
 	"net/http"
 	"time"

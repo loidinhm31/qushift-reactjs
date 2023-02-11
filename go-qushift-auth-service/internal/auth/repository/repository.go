@@ -2,8 +2,8 @@ package repository
 
 import (
 	"context"
-	"go-qushift-auth-be/internal/auth"
-	"go-qushift-auth-be/internal/models"
+	"go-qushift-auth-service/internal/auth"
+	"go-qushift-auth-service/internal/models"
 	"gorm.io/gorm"
 	"strings"
 )

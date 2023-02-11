@@ -3,7 +3,7 @@ package server
 import (
 	"context"
 	"github.com/gin-gonic/gin"
-	"go-qushift-auth-be/config"
+	"go-qushift-auth-service/config"
 	"gorm.io/gorm"
 	"log"
 	"os"
