@@ -12,6 +12,33 @@ services:
         volumes:
             - ~/storage/data/mongodb:/data/db
 
+    postgres:
+        image: "postgres:15.0"
+        ports:
+            - "5432:5432"
+        deploy:
+            mode: replicated
+            replicas: 1
+        environment:
+            POSTGRES_USER: postgres
+            POSTGRES_PASSWORD: postgrespw
+            POSTGRES_DB: users
+        volumes:
+            - ~/storage/data/postgres:/var/lib/postgresql/data
+
+    go-qushift-auth-service:
+        build:
+            context: ./../go-qushift-auth-service
+            dockerfile: ./../project/docker/Dockerfile.go-auth-service
+        restart: always
+        ports:
+            - "5000:5000"
+        environment:
+            - profile=docker
+        deploy:
+            mode: replicated
+            replicas: 1
+
     java-qushift-backend:
         build:
             context: ./../java-qushift-be

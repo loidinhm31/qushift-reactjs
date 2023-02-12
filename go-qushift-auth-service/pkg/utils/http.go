@@ -5,11 +5,11 @@ import (
 )
 
 // GetConfigPath Get config path for config yml file
-func GetConfigPath(configPath string) string {
-	if configPath == "docker" {
-		return "./config/config-docker"
+func GetConfigPath(profile string) string {
+	if profile == "docker" {
+		return "config-docker"
 	}
-	return "./config/config-local"
+	return "config-local"
 }
 
 // ReadRequest Read request body and validate

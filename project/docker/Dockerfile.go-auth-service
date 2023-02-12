@@ -1,0 +1,8 @@
+FROM alpine:latest
+
+RUN mkdir /app
+
+COPY authBinary /app
+COPY /config /etc/config
+
+CMD ["/app/authBinary"]

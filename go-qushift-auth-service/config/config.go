@@ -44,12 +44,17 @@ type PostgresConfig struct {
 }
 
 // LoadConfig Load config file from given path
-func LoadConfig(filename string) (*viper.Viper, error) {
+func LoadConfig(filename string, envProfile string) (*viper.Viper, error) {
 	v := viper.New()
 
 	v.SetConfigName(filename)
-	v.AddConfigPath(".")
-	v.AutomaticEnv()
+
+	configPath := "/etc/config"
+	if envProfile == "" {
+		configPath = "./config"
+	}
+	v.AddConfigPath(configPath)
+
 	if err := v.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
 			return nil, errors.New("config file not found")
