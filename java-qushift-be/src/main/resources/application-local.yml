@@ -3,6 +3,13 @@ spring:
         mongodb:
             uri: mongodb://mongodb:mongodbpw@localhost:27017/?readPreference=primary
             database: qushift
+    security:
+        oauth2:
+            resource-server:
+                opaque-token:
+                    introspection-uri: http://localhost:5000/api/v1/auth/verify
+                    client-id: QSHIFT_API_SECRET
+                    client-secret: ofBYMfWcT48VYenq8kh0jzdYegxxSPAZ
 
 client:
-    frontend-endpoint: http://localhost:4000
+    frontend-endpoint: http://localhost:4000, http://127.0.0.1:4000
