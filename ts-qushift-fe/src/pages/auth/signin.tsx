@@ -123,7 +123,7 @@ const SigninForm = ({ credentials, bgColorClass }: { credentials: ClientSafeProv
 		>
 			<Stack>
 				<Input variant="outline" size="lg" placeholder="Username" {...register("username")} />
-				<Input variant="outline" size="lg" placeholder="Password" {...register("password")} />
+				<Input variant="outline" size="lg" placeholder="Password" type="password" {...register("password")} />
 
 				<SigninButton leftIcon={<FaUser />}>Continue with User</SigninButton>
 			</Stack>
