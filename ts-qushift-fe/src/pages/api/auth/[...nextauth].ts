@@ -1,5 +1,5 @@
 import { boolean } from "boolean";
-import type { AuthOptions, User } from "next-auth";
+import type { AuthOptions, DefaultUser } from "next-auth";
 import NextAuth from "next-auth";
 import { Provider } from "next-auth/providers";
 import CredentialsProvider from "next-auth/providers/credentials";
@@ -16,11 +16,11 @@ if (boolean(process.env.DEBUG_LOGIN) || process.env.NODE_ENV === "development") 
 				role: { label: "Role", type: "text" }
 			},
 			async authorize(credentials) {
-				const user = {
+				const user: DefaultUser = {
 					id: credentials.username,
-					sub: credentials.role,
 					name: credentials.username,
-					role: credentials.role
+					role: credentials.role,
+					token: ""
 				};
 				return user;
 			}
@@ -41,7 +41,7 @@ providers.push(
 				username: credentials.username,
 				password: credentials.password
 			};
-			const res = await fetch("http://localhost:5000/api/v1/auth/login", {
+			const res = await fetch(`${process.env.AUTH_API_URL}/api/v1/auth/login`, {
 				method: "POST",
 				body: JSON.stringify(payload),
 				headers: {
@@ -50,9 +50,8 @@ providers.push(
 			});
 			const userWithToken = await res.json();
 			if (res.ok && userWithToken) {
-				const user = {
+				const user: DefaultUser = {
 					id: userWithToken.user.username,
-					sub: userWithToken.user.username,
 					name: userWithToken.user.username,
 					role: "general", // TODO,
 					token: userWithToken.token
