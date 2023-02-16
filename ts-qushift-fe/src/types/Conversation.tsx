@@ -9,7 +9,7 @@ export interface Message {
 
 export interface Topic {
     id: string;
-    originId: string;
+    originId?: string;
     isNew: boolean;
     name: string;
     members?: Member[];
