@@ -62,8 +62,10 @@ export function MessageBox(messageProps: MessageProps) {
 	useEffect(() => {
 		if (incomingMessage) {
 			if (messages.length == 0 || !messages.some((m: Message) => m.id === incomingMessage.id)) {
-				console.log(`Updating stream for id ${messageProps.topicId}...`);
-				setMessages([...messages, incomingMessage]);
+				if (incomingMessage.topicId == messageProps.topicId) {
+					console.log(`Updating stream for id ${messageProps.topicId}...`);
+					setMessages([...messages, incomingMessage]);
+				}
 			}
 		}
 	}, [incomingMessage]);
