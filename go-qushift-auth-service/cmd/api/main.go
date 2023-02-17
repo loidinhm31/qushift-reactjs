@@ -12,9 +12,9 @@ import (
 func main() {
 	log.Println("Starting API server")
 
-	configPath := utils.GetConfigPath(os.Getenv("config"))
-
-	cfgFile, err := config.LoadConfig(configPath)
+	envProfile := os.Getenv("profile")
+	configPath := utils.GetConfigPath(envProfile)
+	cfgFile, err := config.LoadConfig(configPath, envProfile)
 	if err != nil {
 		log.Fatalf("LoadConfig: %v", err)
 	}
