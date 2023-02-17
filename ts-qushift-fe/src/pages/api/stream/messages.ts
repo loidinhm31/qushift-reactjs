@@ -1,10 +1,14 @@
 import nextConnect from "next-connect";
 import EventSource from "eventsource";
 import { withoutRole } from "../../../lib/auth";
+import { ApiResponse } from "types/next-auth";
+import { NextApiRequest } from "next";
+import { JWT } from "next-auth/jwt";
 
 const handler = nextConnect();
 
-const sseMiddleware = (req, res, next) => {
+
+const sseMiddleware = (req, res: ApiResponse, next) => {
 	res.setHeader("Content-Type", "text/event-stream");
 	res.setHeader("Cache-Control", "no-cache");
 	res.flushHeaders();
@@ -22,7 +26,7 @@ const sseMiddleware = (req, res, next) => {
 	next();
 };
 
-const stream = withoutRole("banned", async (req, res, token) => {
+const stream = withoutRole("banned", async (req: NextApiRequest, res: ApiResponse, token: JWT) => {
 	console.log("connect to SSE message stream");
 
 	const { topicId } = req.query;
