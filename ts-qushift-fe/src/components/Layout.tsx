@@ -15,7 +15,7 @@ export type NextPageWithLayout<P = unknown, IP = P> = NextPage<P, IP> & {
 export const getDefaultLayout = (page: React.ReactElement) => (
     <div className="grid grid-rows-[min-content_1fr_min-content] h-full justify-items-stretch">
         <Header />
-        {page}
+            {page}
         <Footer />
     </div>
 );

@@ -53,8 +53,7 @@ export function InputBox({ currTopicId, message, dispatch }: TopicProps) {
             </Box>
 
             <Input
-                width={["full", "full", "full", "fit-content"]}
-                maxWidth={["full", "full", "full", "2xl"]}
+                width={["full", "full", "full", "xl"]}
                 p="4"
                 borderRadius="md"
                 type="input"

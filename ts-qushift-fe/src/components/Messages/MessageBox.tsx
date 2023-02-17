@@ -89,12 +89,14 @@ export function MessageBox(messageProps: MessageProps) {
 			}
 
 			<Box
+				width={["100%", "100%", "100px", "xl"]}
 				ref={listInnerRef}
 				onScroll={onScrollToTop}
-				overflowY="auto" height="700px"
+				overflowY="auto"
+				maxHeight="700px"
 				onMouseEnter={() => messageProps.onMouseAction(true)}
 				onMouseLeave={() => messageProps.onMouseAction(false)}
-				className="p-4 w-full shadow"
+				className="p-4 h-full"
 			>
 				{messages ? <MessageTable messages={messages} /> : <CircularProgress isIndeterminate />}
 

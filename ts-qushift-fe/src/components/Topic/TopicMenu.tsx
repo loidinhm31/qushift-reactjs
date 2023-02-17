@@ -1,13 +1,13 @@
-import { Badge, Box, Button, CircularProgress, List, ListItem, Text } from "@chakra-ui/react";
+import { Badge, Box, Button, CircularProgress, List, ListItem } from "@chakra-ui/react";
 import React, { Dispatch, useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import useSWRImmutable from "swr/immutable";
 import { get, post } from "../../lib/api";
 import { Member, Topic } from "../../types/Conversation";
 import useSWRMutation from "swr/mutation";
 import { useSession } from "next-auth/react";
 import { CreatableTopicElement } from "./CreatableTopicElement";
 import { useEventStream } from "../../hooks/eventstream/useEventStream";
+import useSWR from "swr";
 
 interface TopicProps {
 	currTopicId?: string;
@@ -25,11 +25,18 @@ export function TopicMenu({ currTopicId, sendSignal, dispatch }: TopicProps) {
 	const [msgMap, setMsgMap] = useState<Map<string, string>>(new Map());
 
 	// Get all topics
-	const { isLoading } = useSWRImmutable(`../api/topics/page`, get, {
+	const { data, isLoading, isValidating, mutate } = useSWR(`../api/topics/page/?start=0`, get, {
 		onSuccess: (data) => {
 			setTopics(data);
-		}, revalidateOnMount: true
+		}
 	});
+
+	// Reload invalidate data
+	useEffect(() => {
+		if (!isValidating) {
+			setTopics(data);
+		}
+	}, [router.asPath]);
 
 	const { trigger } = useSWRMutation("/api/messages/send_signal", post);
 
@@ -56,6 +63,8 @@ export function TopicMenu({ currTopicId, sendSignal, dispatch }: TopicProps) {
 				if (!topics.some((t) => t.id === topic.originId)) {
 					console.log(`Adding new topic ${topic.originId}`);
 					setTopics([topic, ...topics]);
+					// Force mutate data
+					mutate(data);
 				}
 			} else if (!topic.isNew) {
 				console.log(`Updating notification for receiver on topic ${topic.originId}...`);
@@ -105,13 +114,15 @@ export function TopicMenu({ currTopicId, sendSignal, dispatch }: TopicProps) {
 			<CreatableTopicElement>
 				<Box />
 			</CreatableTopicElement>
-			<Box overflowY="auto" height="700px"
+			<Box overflowY="auto"
+				 maxHeight="700px"
 				 className="overflow-y-auto p-3 w-full">
 
 				{isLoading && <CircularProgress isIndeterminate />}
 
 				<List className="grid grid-cols-3 col-span-3 sm:flex sm:flex-col gap-2">
-					{topics && (topics as Topic[]).map((item, index) => (
+					{topics && topics.map((item, index) => (
+
 						<ListItem
 							onClick={() => goToTopic(item.id)}
 							key={`${item.id}-${index}`}
@@ -121,11 +132,12 @@ export function TopicMenu({ currTopicId, sendSignal, dispatch }: TopicProps) {
 								justifyContent={["center", "center", "center", "left"]}
 								gap="3"
 								size="lg"
-								width="full"
+								width="xs"
 								bg={currTopicId === item.id ? "blue.500" : null}
 								_hover={currTopicId === item.id ? { bg: "blue.600" } : null}
 							>
-								<Text
+								<Box
+									noOfLines={1}
 									fontWeight="normal"
 									color={currTopicId === item.id ? "white" : null}
 									className="hidden lg:block"
@@ -136,7 +148,7 @@ export function TopicMenu({ currTopicId, sendSignal, dispatch }: TopicProps) {
 											{msgMap.get(item.id)}
                                         </Badge>
 									}
-								</Text>
+								</Box>
 							</Button>
 						</ListItem>
 					))}
