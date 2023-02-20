@@ -14,9 +14,6 @@ public interface ReactiveTopicRepository extends ReactiveMongoRepository<Topic, 
 
     Mono<Topic> findById(String topicId);
 
-    @Query(value = "{'members': {$elemMatch: {'userId': ?0}}}")
-    Flux<Topic> findByMemberMatchUser(String userId);
-
     @Query(value = "{$and: [" +
             "{'_id': ?0}, " +
             "{'members': {$elemMatch: {'userId': ?1}}}" +
