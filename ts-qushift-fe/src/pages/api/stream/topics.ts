@@ -1,7 +1,7 @@
 import nextConnect from "next-connect";
 import EventSource from "eventsource";
 import { getSession } from "next-auth/react";
-import { withoutRole } from "../../../lib/auth";
+import { withoutRole } from "@/lib/auth";
 import { ApiResponse } from "types/next-auth";
 import { NextApiRequest } from "next";
 import { JWT } from "next-auth/jwt";
@@ -9,52 +9,52 @@ import { JWT } from "next-auth/jwt";
 const handler = nextConnect();
 
 const sseMiddleware = (req: NextApiRequest, res: ApiResponse, next) => {
-	res.setHeader("Content-Type", "text/event-stream");
-	res.setHeader("Cache-Control", "no-cache");
-	res.flushHeaders();
+  res.setHeader("Content-Type", "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache");
+  res.flushHeaders();
 
-	const flushData = (data) => {
-		const sseFormattedResponse = `data: ${data}\n\n`;
-		res.write("event: message\n");
-		res.write(sseFormattedResponse);
-		res.flush();
-	};
+  const flushData = (data) => {
+    const sseFormattedResponse = `data: ${data}\n\n`;
+    res.write("event: message\n");
+    res.write(sseFormattedResponse);
+    res.flush();
+  };
 
-	Object.assign(res, {
-		flushData
-	});
-	next();
+  Object.assign(res, {
+    flushData,
+  });
+  next();
 };
 
 const stream = withoutRole("banned", async (req: NextApiRequest, res: ApiResponse, token: JWT) => {
-	console.log("connect to SSE topics stream");
+  console.log("connect to SSE topics stream");
 
-	const session = await getSession({ req });
+  const session = await getSession({ req });
 
-	const headers = {
-		headers: {
-			"Authorization": `Bearer ${token.accessToken}`
-		}
-	};
+  const headers = {
+    headers: {
+      Authorization: `Bearer ${token.accessToken}`,
+    },
+  };
 
-	let eventSource = new EventSource(`${process.env.API_BASE_URL}/topics/stream/${session.user.id}`, headers);
-	eventSource.onopen = (e) => {
-		console.log("listen to sse endpoint now", e);
-	};
-	eventSource.onmessage = (e) => {
-		res.flushData(e.data);
-	};
-	eventSource.onerror = (e) => {
-		console.log("error", e);
-	};
+  let eventSource = new EventSource(`${process.env.API_BASE_URL}/topics/stream/${session.user.id}`, headers);
+  eventSource.onopen = (e) => {
+    console.log("listen to sse endpoint now", e);
+  };
+  eventSource.onmessage = (e) => {
+    res.flushData(e.data);
+  };
+  eventSource.onerror = (e) => {
+    console.log("error", e);
+  };
 
-	// Close connection (detach subscriber)
-	res.on("close", () => {
-		console.log("close connection to topics...");
-		eventSource.close();
-		eventSource = null;
-		res.end();
-	});
+  // Close connection (detach subscriber)
+  res.on("close", () => {
+    console.log("close connection to topics...");
+    eventSource.close();
+    eventSource = null;
+    res.end();
+  });
 });
 
 // Stream API Data
