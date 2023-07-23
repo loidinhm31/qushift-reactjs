@@ -8,7 +8,6 @@ import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import Dashboard from "./dashboard";
 
 const Home = () => {
-	const router = useRouter();
 	const { t } = useTranslation("index");
 
 	return (

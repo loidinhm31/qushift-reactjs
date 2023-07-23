@@ -10,7 +10,7 @@ declare module "next-auth" {
 		} & DefaultSession["user"];
 	}
 }
-;
+
 
 declare module "next-auth/jwt" {
 	interface JWT {
@@ -19,7 +19,7 @@ declare module "next-auth/jwt" {
 		role?: string;
 	}
 }
-;
+
 
 declare module "next-auth/core/types" {
 	interface DefaultUser {
@@ -28,9 +28,9 @@ declare module "next-auth/core/types" {
 		role?: string;
 	}
 }
-;
+
 
 declare type ApiResponse<T = any> = NextApiResponse & {
 	flush();
 	flushData(data: string);
-};
+}

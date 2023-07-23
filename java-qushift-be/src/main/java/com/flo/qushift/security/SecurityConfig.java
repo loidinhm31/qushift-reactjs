@@ -41,11 +41,8 @@ public class SecurityConfig {
                 // Health check
                 .pathMatchers(HttpMethod.GET, "/actuator/**").permitAll()
                 .and()
-                .authorizeExchange().anyExchange().authenticated()
-                .and()
-                .oauth2ResourceServer(oauth2 -> oauth2
-                        .opaqueToken(opaqueToken -> opaqueToken
-                                .introspector(introspector())))
+
+                .authorizeExchange().anyExchange().permitAll()
 
         ;
         return http.build();

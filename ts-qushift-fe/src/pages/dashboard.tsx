@@ -1,5 +1,6 @@
 import Head from "next/head";
 import { getDashboardLayout } from "src/components/Layout";
+import { Bluetooth } from "../components/Bluetooth";
 
 export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_props";
 
@@ -11,7 +12,9 @@ const Dashboard = () => {
 				<title>Dashboard</title>
 				<meta name="description" content="QuShift." />
 			</Head>
-			<p>Hello World</p>
+
+			<Bluetooth />
+
 		</>
 	);
 };

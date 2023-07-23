@@ -51,18 +51,18 @@ services:
         deploy:
             mode: replicated
             replicas: 1
-
-    nextjs-qushift-frontend:
-        build:
-            context: ./../ts-qushift-fe
-            dockerfile: ./../project/docker/Dockerfile.nextjs-frontend
-        restart: always
-        ports:
-            - "4000:4000"
-        environment:
-            - NEXTAUTH_SECRET=cXVzaGlmdGhlbGxv
-            - NEXTAUTH_URL=http://localhost:4000
-            - DEBUG_LOGIN=true
-        deploy:
-            mode: replicated
-            replicas: 1
+#
+#    nextjs-qushift-frontend:
+#        build:
+#            context: ./../ts-qushift-fe
+#            dockerfile: ./../project/docker/Dockerfile.nextjs-frontend
+#        restart: always
+#        ports:
+#            - "4000:4000"
+#        environment:
+#            - NEXTAUTH_SECRET=cXVzaGlmdGhlbGxv
+#            - NEXTAUTH_URL=http://localhost:4000
+#            - DEBUG_LOGIN=true
+#        deploy:
+#            mode: replicated
+#            replicas: 1

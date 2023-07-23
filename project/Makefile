@@ -33,5 +33,5 @@ build_java_qushift_be:
 ## build_nextjs_qushift_fe: builds the nextjs qshift frontend  jar as a linux executable
 build_nextjs_qushift_fe:
 	@echo "Building qshift frontend..."
-	cd ../ts-qushift-fe && npm install && npm run build
+# 	cd ../ts-qushift-fe && npm install && npm run build
 	@echo "Done!"

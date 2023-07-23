@@ -29,6 +29,7 @@ const api = axios.create({
 export const get = (url: string) => api.get(url).then((res) => res.data);
 
 
+
 export const post = (url: string, { arg: data }) => api.post(url, data).then((res) => res.data);
 
 api.interceptors.response.use(

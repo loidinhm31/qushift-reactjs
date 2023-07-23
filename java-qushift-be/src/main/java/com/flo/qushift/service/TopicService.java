@@ -1,23 +1,22 @@
 package com.flo.qushift.service;
 
-import com.flo.qushift.document.BaseDocument;
+import java.time.LocalDateTime;
+
+import org.bson.types.ObjectId;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+
 import com.flo.qushift.document.StreamTopic;
 import com.flo.qushift.document.Topic;
 import com.flo.qushift.dto.TopicDto;
 import com.flo.qushift.repository.ReactiveTopicRepository;
 import com.flo.qushift.repository.TopicStreamRepository;
+
 import lombok.RequiredArgsConstructor;
-import org.bson.types.ObjectId;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
-
-import java.time.LocalDateTime;
-import java.util.Comparator;
-import java.util.Objects;
 
 @RequiredArgsConstructor
 @Service
