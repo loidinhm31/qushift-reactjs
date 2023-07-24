@@ -1,7 +1,7 @@
 import { colors } from "@/styles/Theme/colors";
 import { Box, Button, Text, Tooltip, useColorMode } from "@chakra-ui/react";
 import Link from "next/link";
-import { useRouter } from "next/router";
+import { usePathname, useRouter } from "next/navigation";
 import { FiSun } from "react-icons/fi";
 import { IconType } from "react-icons/lib";
 
@@ -17,7 +17,7 @@ export interface SideMenuProps {
 }
 
 export function SideMenu(props: SideMenuProps) {
-  const router = useRouter();
+  const pathname = usePathname();
   const { colorMode, toggleColorMode } = useColorMode();
 
   return (
@@ -44,13 +44,13 @@ export function SideMenu(props: SideMenuProps) {
                   gap="3"
                   size="lg"
                   width="full"
-                  bg={router.pathname === item.pathname ? "blue.500" : null}
-                  _hover={router.pathname === item.pathname ? { bg: "blue.600" } : null}
+                  bg={pathname === item.pathname ? "blue.500" : undefined}
+                  _hover={pathname === item.pathname ? { bg: "blue.600" } : undefined}
                 >
-                  <item.icon className={router.pathname === item.pathname ? "text-blue-200" : null} />
+                  <item.icon className={pathname === item.pathname ? "text-blue-200" : undefined} />
                   <Text
                     fontWeight="normal"
-                    color={router.pathname === item.pathname ? "white" : null}
+                    color={pathname === item.pathname ? "white" : undefined}
                     className="hidden lg:block"
                   >
                     {item.label}

@@ -1,9 +1,9 @@
 import { extendTheme, type ThemeConfig } from "@chakra-ui/react";
 import { Styles } from "@chakra-ui/theme-tools";
 
-import { colors } from "./colors";
-import { cardTheme } from "./components/Card";
-import { containerTheme } from "./components/Container";
+import { cardTheme } from "@/styles/Theme/components/Card";
+import { containerTheme } from "@/styles/Theme/components/Container";
+import { colors } from "@/styles/Theme/colors";
 
 const config: ThemeConfig = {
   initialColorMode: "light",
@@ -25,8 +25,8 @@ const breakpoints = {
 };
 
 const fonts = {
-  heading: "Inter",
-  body: "Inter",
+  heading: "",
+  body: "",
 };
 
 const styles: Styles = {

@@ -1,2 +1,2 @@
-export { Header } from "./Header";
-export { UserMenu } from "./UserMenu";
+export { Header } from "@/components/Header/Header";
+export { UserMenu } from "@/components/Header/UserMenu";
