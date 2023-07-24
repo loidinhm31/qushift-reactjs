@@ -7,7 +7,6 @@ import { useSession } from "next-auth/react";
 import { UserMenu } from "@/components/Header/UserMenu";
 import AccountButton from "@/components/Header/Account";
 
-
 export function Header() {
   const { data: session } = useSession();
   const homeURL = session ? "/dashboard" : "/";

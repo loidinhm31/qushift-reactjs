@@ -5,7 +5,7 @@ export async function POST(request: NextRequest) {
   const token = await getToken({ req: request });
   if (!token || token.role === "banned") {
     return new Response("message: Unauthorized", {
-      status: 403
+      status: 403,
     });
   }
 
@@ -18,12 +18,12 @@ export async function POST(request: NextRequest) {
   const requestOptions = {
     method: "POST",
     headers: headers,
-    body: JSON.stringify(data)
+    body: JSON.stringify(data),
   };
 
   const response = await fetch(`${process.env.API_BASE_URL}/messages`, requestOptions);
 
   return new Response(await response.json(), {
-    status: 200
+    status: 200,
   });
 }

@@ -16,60 +16,50 @@ const menuButtonOptions = [
     label: "Dashboard",
     pathname: "/dashboard",
     desc: "Dashboard Dashboard",
-    icon: FiLayout
+    icon: FiLayout,
   },
   {
     label: "Messages",
     pathname: "/messages",
     desc: "Messages",
-    icon: FiMessageSquare
-  }
+    icon: FiMessageSquare,
+  },
 ];
 
 const swrConfig: SWRConfiguration = {
   revalidateOnFocus: false,
-  revalidateOnMount: true
+  revalidateOnMount: true,
 };
 
-export default function RootLayout({ children }: {
-  children: React.ReactNode
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   const path = usePathname();
 
   return (
     <html lang="en">
-    <body>
-    <div className="grid grid-rows-[min-content_1fr_min-content] h-full justify-items-stretch">
+      <body>
+        <div className="grid grid-rows-[min-content_1fr_min-content] h-full justify-items-stretch">
+          <Chakra>
+            <SWRConfig value={swrConfig}>
+              <NextAuthProvider>
+                <Grid templateRows="min-content 1fr" h="full">
+                  <Header />
 
-      <Chakra>
-        <SWRConfig value={swrConfig}>
-          <NextAuthProvider>
-            <Grid templateRows="min-content 1fr" h="full">
-
-              <Header />
-
-              <SideMenuLayout
-                menuButtonOptions={menuButtonOptions}
-              >
-                <Grid templateRows="1fr min-content" h="full">
-                  <Box>
-                    {children}
-                  </Box>
-                  <Box mt="10">
-                    <Footer />
-                  </Box>
+                  <SideMenuLayout menuButtonOptions={menuButtonOptions}>
+                    <Grid templateRows="1fr min-content" h="full">
+                      <Box>{children}</Box>
+                      <Box mt="10">
+                        <Footer />
+                      </Box>
+                    </Grid>
+                  </SideMenuLayout>
                 </Grid>
-              </SideMenuLayout>
-            </Grid>
 
-            <Footer />
-
-          </NextAuthProvider>
-        </SWRConfig>
-      </Chakra>
-
-    </div>
-    </body>
+                <Footer />
+              </NextAuthProvider>
+            </SWRConfig>
+          </Chakra>
+        </div>
+      </body>
     </html>
   );
 }

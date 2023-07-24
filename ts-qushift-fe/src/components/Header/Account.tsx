@@ -5,14 +5,12 @@ import React from "react";
 import { FaUser } from "react-icons/fa";
 import { useSession } from "next-auth/react";
 
-
 export default function AccountButton() {
   const { data: session } = useSession();
 
   return (
     <div>
-      {
-        !session &&
+      {!session && (
         <Link href="/signin" aria-label="Home">
           <Flex alignItems="center">
             <Button variant="outline" leftIcon={<FaUser />}>
@@ -20,7 +18,7 @@ export default function AccountButton() {
             </Button>
           </Flex>
         </Link>
-      }
+      )}
     </div>
   );
 }

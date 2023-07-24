@@ -13,7 +13,7 @@ import {
   ModalOverlay,
   Stack,
   useColorModeValue,
-  useDisclosure
+  useDisclosure,
 } from "@chakra-ui/react";
 import React, { useState } from "react";
 import useSWRMutation from "swr/mutation";

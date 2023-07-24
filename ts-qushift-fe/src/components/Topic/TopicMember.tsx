@@ -17,7 +17,7 @@ export function TopicMember({ currTopic }: TopicMemberProps) {
       redirect("/signin");
       return;
     }
-  }, [session])
+  }, [session]);
 
   return (
     <Box overflowY="auto" maxHeight="700px" className="overflow-y-auto p-3 w-full">

@@ -35,7 +35,7 @@ export default function MessageDetail({ params }: { params: { id: string } }) {
     },
     onError: () => {
       router.push("/404");
-    }
+    },
   });
 
   useEffect(() => {
@@ -106,4 +106,3 @@ export default function MessageDetail({ params }: { params: { id: string } }) {
     </Stack>
   );
 }
-;

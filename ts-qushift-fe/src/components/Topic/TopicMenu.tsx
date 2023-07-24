@@ -31,7 +31,7 @@ export function TopicMenu({ currTopicId, sendSignal, dispatch }: TopicProps) {
   const { data, isLoading, isValidating, mutate } = useSWR(`/api/topics/page/?start=0`, get, {
     onSuccess: (data) => {
       setTopics(data);
-    }
+    },
   });
 
   useEffect(() => {
@@ -47,19 +47,18 @@ export function TopicMenu({ currTopicId, sendSignal, dispatch }: TopicProps) {
     }
   }, [pathname]);
 
-
   const goToTopic = useCallback(
     (topicId: string) => {
       if (dispatch) {
         dispatch({
           type: "changed_selection",
-          topicId: topicId
+          topicId: topicId,
         });
       }
 
       router.push(`/messages/${topicId}`);
     },
-    [pathname]
+    [pathname],
   );
 
   // Control event source to work with SSE for incoming notify

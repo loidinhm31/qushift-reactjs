@@ -30,7 +30,7 @@ export default function Rooms() {
     if (cameraStatus || audioStatus) {
       const mediaOptions = {
         video: cameraStatus,
-        audio: audioStatus
+        audio: audioStatus,
       };
 
       navigator.mediaDevices.getUserMedia(mediaOptions).then((currStream) => {
@@ -58,7 +58,7 @@ export default function Rooms() {
         isReceivingCall: true,
         id: payload.from.id,
         name: payload.from.name,
-        signal: payload.signal
+        signal: payload.signal,
       });
     });
 
@@ -74,7 +74,7 @@ export default function Rooms() {
     const peer = new SimplePeer({
       initiator: true,
       trickle: false,
-      stream
+      stream,
     });
 
     const to = { id: userToSignal };
@@ -82,7 +82,7 @@ export default function Rooms() {
       socketRef.current?.emit("sending_signal", {
         to: to,
         from: caller,
-        signal: signal
+        signal: signal,
       });
     });
     return peer;
@@ -92,16 +92,16 @@ export default function Rooms() {
     const peer = new Peer({
       initiator: false,
       trickle: false,
-      stream
+      stream,
     });
 
     peer.on("signal", (signal) => {
       socketRef.current?.emit("returning_signal", {
         to: {
           id: call.id,
-          name: call.name
+          name: call.name,
         },
-        signal: signal
+        signal: signal,
       });
     });
 
@@ -139,8 +139,7 @@ export default function Rooms() {
     setCallEnded(true);
 
     // TODO destroy
-    peersRef.current.forEach((value) => {
-    });
+    peersRef.current.forEach((value) => {});
 
     window.location.reload();
   };
@@ -175,4 +174,4 @@ export default function Rooms() {
       />
     </>
   );
-};
+}

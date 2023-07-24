@@ -27,8 +27,15 @@ export default function Account() {
         <meta name="description" content="QuShift." />
       </Head>
       <Flex m="auto" className="max-w-7xl" alignContent="center">
-        <Box m={10} p="10" borderRadius="xl" gap="2" shadow="base" bgColor={backgroundColor}
-             className="p-4 sm:p-6 w-full">
+        <Box
+          m={10}
+          p="10"
+          borderRadius="xl"
+          gap="2"
+          shadow="base"
+          bgColor={backgroundColor}
+          className="p-4 sm:p-6 w-full"
+        >
           <Text as="b" display="block" fontSize="2xl" py={2}>
             Your Account
           </Text>
@@ -49,7 +56,6 @@ export default function Account() {
           <p></p>
         </Box>
       </Flex>
-
     </>
   );
 }

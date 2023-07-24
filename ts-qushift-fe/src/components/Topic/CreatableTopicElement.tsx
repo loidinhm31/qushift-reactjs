@@ -16,7 +16,7 @@ import {
   Stack,
   Tooltip,
   useColorModeValue,
-  useDisclosure
+  useDisclosure,
 } from "@chakra-ui/react";
 import React, { useState } from "react";
 import { post } from "@/lib/api";

@@ -27,7 +27,7 @@ const errorMessages: Record<SignInErrorTypes, string> = {
 };
 
 export default function Signin() {
-  const searchParams  = useSearchParams();
+  const searchParams = useSearchParams();
   const [error, setError] = useState("");
 
   useEffect(() => {

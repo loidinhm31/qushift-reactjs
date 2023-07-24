@@ -24,7 +24,7 @@
     "bootstrap": "^5.2.3",
     "clsx": "^1.2.1",
     "dotenv": "^16.0.3",
-    "eslint": "8.29.0",
+    "eslint": "8.45.0",
     "eventsource": "^2.0.2",
     "next": "^13.4.12",
     "next-auth": "^4.22.3",
