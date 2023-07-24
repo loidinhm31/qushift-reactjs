@@ -1,9 +1,11 @@
-import nextConnect from "next-connect";
 import EventSource from "eventsource";
-import { withoutRole } from "@/lib/auth";
-import { ApiResponse } from "../../../../types/next-auth";
 import { NextApiRequest } from "next";
 import { JWT } from "next-auth/jwt";
+import nextConnect from "next-connect";
+
+import { withoutRole } from "@/lib/auth";
+
+import { ApiResponse } from "../../../../types/next-auth";
 
 const handler = nextConnect();
 

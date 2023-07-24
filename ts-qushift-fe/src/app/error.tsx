@@ -2,6 +2,7 @@
 
 import { Box, Button, Center, Link, Text } from "@chakra-ui/react";
 import { FiAlertTriangle } from "react-icons/fi";
+
 import { EmptyState } from "@/components/EmptyState";
 
 export default function Error() {

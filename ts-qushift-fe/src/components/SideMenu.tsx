@@ -1,9 +1,10 @@
-import { colors } from "@/styles/Theme/colors";
 import { Box, Button, Text, Tooltip, useColorMode } from "@chakra-ui/react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { FiSun } from "react-icons/fi";
 import { IconType } from "react-icons/lib";
+
+import { colors } from "@/styles/Theme/colors";
 
 export interface MenuButtonOption {
   label: string;

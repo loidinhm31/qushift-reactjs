@@ -1,3 +1,4 @@
+import { FocusLock } from "@chakra-ui/focus-lock";
 import {
   Box,
   Button,
@@ -18,13 +19,13 @@ import {
   useColorModeValue,
   useDisclosure,
 } from "@chakra-ui/react";
-import React, { useState } from "react";
+import { useSession } from "next-auth/react";
+import React, { useRef, useState } from "react";
+import { SlNote } from "react-icons/sl";
+import useSWRMutation from "swr/mutation";
+
 import { post } from "@/lib/api";
 import { colors } from "@/styles/Theme/colors";
-import useSWRMutation from "swr/mutation";
-import { SlNote } from "react-icons/sl";
-import { FocusLock } from "@chakra-ui/focus-lock";
-import { useSession } from "next-auth/react";
 import { Member } from "@/types/Conversation";
 
 interface CreatableTopicElementProps {
@@ -32,7 +33,7 @@ interface CreatableTopicElementProps {
 }
 
 export const CreatableTopicElement = (props: CreatableTopicElementProps) => {
-  const firstFieldRef = React.useRef(null);
+  const firstFieldRef = useRef<HTMLInputElement | null>(null);
   const { onOpen, onClose, isOpen } = useDisclosure();
 
   return (
@@ -67,8 +68,8 @@ export const CreatableTopicElement = (props: CreatableTopicElementProps) => {
 };
 
 interface FormProps {
-  firstFieldRef: React.RefObject<any>;
-  onClose;
+  firstFieldRef?: React.RefObject<HTMLInputElement>;
+  onClose: () => void;
 }
 
 interface TopicProps {
@@ -76,7 +77,7 @@ interface TopicProps {
   topicMembers: Member[];
 }
 
-const SubmitForm = ({ firstFieldRef, onClose }: FormProps) => {
+const SubmitForm: React.FC<FormProps> = ({ firstFieldRef, onClose }) => {
   const { data: session } = useSession();
   const [submittable, setSubmittable] = useState(false);
 
@@ -87,7 +88,7 @@ const SubmitForm = ({ firstFieldRef, onClose }: FormProps) => {
 
   const { trigger } = useSWRMutation("/api/topics/create_topic", post, {});
 
-  const handleChange = (event) => {
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.value.length > 0) {
       setSubmittable(true);
     } else {
@@ -99,13 +100,13 @@ const SubmitForm = ({ firstFieldRef, onClose }: FormProps) => {
     }));
   };
 
-  const submitTopic = () => {
+  const submitTopic = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     event.preventDefault();
 
     topicForm.topicMembers = [
       {
-        userId: session.user.id,
-        username: session.user.id,
+        userId: session!.user.id,
+        username: session!.user.id,
       },
     ];
 

@@ -1,6 +1,7 @@
 import { Box, useColorMode } from "@chakra-ui/react";
-import { colors } from "@/styles/Theme/colors";
+
 import { MenuButtonOption, SideMenu } from "@/components/SideMenu";
+import { colors } from "@/styles/Theme/colors";
 
 interface SideMenuLayoutProps {
   menuButtonOptions: MenuButtonOption[];

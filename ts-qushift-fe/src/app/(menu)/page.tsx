@@ -1,7 +1,8 @@
 "use client";
 
-import React from "react";
 import { Box } from "@chakra-ui/react";
+import React from "react";
+
 import Dashboard from "@/components/Dashboard";
 
 export default function Home() {

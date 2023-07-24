@@ -1,7 +1,7 @@
-import { Provider } from "next-auth/providers";
 import { boolean } from "boolean";
-import CredentialsProvider from "next-auth/providers/credentials";
 import { DefaultUser } from "next-auth";
+import { Provider } from "next-auth/providers";
+import CredentialsProvider from "next-auth/providers/credentials";
 
 export const providers: Provider[] = [];
 
@@ -16,7 +16,7 @@ if (boolean(process.env.DEBUG_LOGIN) || process.env.NODE_ENV === "development") 
       },
       async authorize(credentials) {
         const user: DefaultUser = {
-          id: credentials?.username!,
+          id: credentials!.username!,
           name: credentials?.username,
           role: credentials?.role,
           token: "",

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { default as Peer, default as SimplePeer } from "simple-peer";
 import { io, Socket } from "socket.io-client";
+
 import Sidebar from "@/components/Room/Sidebar";
 import VideoPlayer from "@/components/Room/VideoPlayer";
 import { Caller } from "@/types/Video";

@@ -1,9 +1,10 @@
 import { Box, Button, List, ListItem, Text } from "@chakra-ui/react";
-import React, { useEffect } from "react";
-import { Topic } from "@/types/Conversation";
-import { useSession } from "next-auth/react";
-import { CreatableMembersElement } from "@/components/Topic/CreatableMembersElement";
 import { redirect } from "next/navigation";
+import { useSession } from "next-auth/react";
+import React, { useEffect } from "react";
+
+import { CreatableMembersElement } from "@/components/Topic/CreatableMembersElement";
+import { Topic } from "@/types/Conversation";
 
 interface TopicMemberProps {
   currTopic: Topic;

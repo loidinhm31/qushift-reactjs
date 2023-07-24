@@ -1,11 +1,13 @@
 import { Box, CircularProgress } from "@chakra-ui/react";
-import { MessageTable } from "./MessageTable";
 import React, { useEffect, useRef, useState } from "react";
-import { MessageLoading } from "./MessageLoading";
-import { Message } from "@/types/Conversation";
-import { get } from "@/lib/api";
-import { useEventStreamBreakState } from "@/hooks/eventstream/useEventStream";
 import useSWR from "swr";
+
+import { useEventStreamBreakState } from "@/hooks/eventstream/useEventStream";
+import { get } from "@/lib/api";
+import { Message } from "@/types/Conversation";
+
+import { MessageLoading } from "./MessageLoading";
+import { MessageTable } from "./MessageTable";
 
 interface MessageProps {
   topicId: string;
@@ -13,8 +15,8 @@ interface MessageProps {
 }
 
 export function MessageBox(messageProps: MessageProps) {
-  const listInnerRef = useRef<HTMLDivElement | null>();
-  const boxEndRef = useRef<HTMLDivElement | null>();
+  const listInnerRef = useRef<HTMLDivElement | null>(null);
+  const boxEndRef = useRef<HTMLDivElement | null>(null);
 
   const [messages, setMessages] = useState<Message[]>([]);
 
@@ -24,14 +26,14 @@ export function MessageBox(messageProps: MessageProps) {
 
   const { isLoading } = useSWR<Message[]>(`../api/messages/${messageProps.topicId}/?start=${currPage}`, get, {
     onSuccess: (data) => {
-      if (currPage == 0) {
+      if (currPage === 0) {
         // Get history messages
         console.log(`Getting history for id ${messageProps.topicId}...`);
         setMessages(data);
       } else if (
         !wasLastList && // Pagination when scroll to top
         prevPage !== currPage &&
-        currPage != 0
+        currPage !== 0
       ) {
         if (!data.length) {
           setWasLastList(true);
@@ -62,8 +64,8 @@ export function MessageBox(messageProps: MessageProps) {
   // Listening the incoming message
   useEffect(() => {
     if (incomingMessage) {
-      if (messages.length == 0 || !messages.some((m: Message) => m.id === incomingMessage.id)) {
-        if (incomingMessage.topicId == messageProps.topicId) {
+      if (messages.length === 0 || !messages.some((m: Message) => m.id === incomingMessage.id)) {
+        if (incomingMessage.topicId === messageProps.topicId) {
           console.log(`Updating stream for id ${messageProps.topicId}...`);
           setMessages([...messages, incomingMessage]);
         }
@@ -73,7 +75,7 @@ export function MessageBox(messageProps: MessageProps) {
 
   // Update page and set effect
   useEffect(() => {
-    if (currPage == 0) {
+    if (currPage === 0) {
       scrollToBottom();
     } else if (!wasLastList && prevPage !== currPage && currPage !== 0) {
       // already get history for the first page, not need to update it

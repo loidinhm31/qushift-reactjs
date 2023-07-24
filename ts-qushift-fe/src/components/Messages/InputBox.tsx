@@ -1,15 +1,17 @@
-import React, { Dispatch } from "react";
-import { post } from "@/lib/api";
 import { Input } from "@chakra-ui/input";
-import { FiSend } from "react-icons/fi";
 import { Box, HStack } from "@chakra-ui/react";
-import useSWRMutation from "swr/mutation";
 import { useSession } from "next-auth/react";
+import React, { Dispatch } from "react";
+import { FiSend } from "react-icons/fi";
+import useSWRMutation from "swr/mutation";
+
+import { Action } from "@/hooks/message/useMessageReducer";
+import { post } from "@/lib/api";
 
 interface TopicProps {
   currTopicId: string;
   message: string;
-  dispatch: Dispatch<any>;
+  dispatch: Dispatch<Action>;
 }
 
 export function InputBox({ currTopicId, message, dispatch }: TopicProps) {
@@ -22,7 +24,7 @@ export function InputBox({ currTopicId, message, dispatch }: TopicProps) {
       const data = {
         content: message,
         receiver: "test-b", // TODO
-        sender: session.user.id,
+        sender: session?.user.id,
         topicId: currTopicId,
       };
       trigger(data).finally(() => {
@@ -34,7 +36,7 @@ export function InputBox({ currTopicId, message, dispatch }: TopicProps) {
     }
   };
 
-  const handleEnterSubmit = (event: any) => {
+  const handleEnterSubmit = (event) => {
     if (event.key === "Enter") {
       handleSubmit();
     }
@@ -56,13 +58,13 @@ export function InputBox({ currTopicId, message, dispatch }: TopicProps) {
         className="form-control"
         name="msg"
         value={message}
-        onChange={(event: any) => {
+        onChange={(event) => {
           dispatch({
             type: "edited_message",
             message: event.target.value,
           });
         }}
-        onKeyDown={(event: any) => handleEnterSubmit(event)}
+        onKeyDown={(event) => handleEnterSubmit(event)}
       />
     </HStack>
   );

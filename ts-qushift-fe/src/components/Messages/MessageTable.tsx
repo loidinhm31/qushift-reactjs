@@ -1,7 +1,8 @@
 import { Stack } from "@chakra-ui/react";
-import { Message } from "@/types/Conversation";
 import React from "react";
+
 import { MessageTableEntry } from "@/components/Messages/MessageTableEntry";
+import { Message } from "@/types/Conversation";
 
 interface MessageTableProps {
   messages: Message[];

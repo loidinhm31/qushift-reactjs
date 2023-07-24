@@ -1,4 +1,5 @@
 import * as process from "process";
+
 import { withoutRole } from "@/lib/auth";
 
 const handler = withoutRole("banned", async (req, res, token) => {

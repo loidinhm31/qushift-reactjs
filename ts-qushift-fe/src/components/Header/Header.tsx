@@ -1,11 +1,11 @@
 import { Box, Flex, Text } from "@chakra-ui/react";
-import Link from "next/link";
 import Image from "next/image";
-
-import React from "react";
+import Link from "next/link";
 import { useSession } from "next-auth/react";
-import { UserMenu } from "@/components/Header/UserMenu";
+import React from "react";
+
 import AccountButton from "@/components/Header/Account";
+import { UserMenu } from "@/components/Header/UserMenu";
 
 export function Header() {
   const { data: session } = useSession();

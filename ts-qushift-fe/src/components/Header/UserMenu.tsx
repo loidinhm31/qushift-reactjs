@@ -11,11 +11,11 @@ import {
   Text,
   useColorModeValue,
 } from "@chakra-ui/react";
-import NextLink from "next/link";
-import React, { ElementType, useCallback, useEffect } from "react";
-import { FiLayout, FiLogOut, FiSettings } from "react-icons/fi";
-import { signOut, useSession } from "next-auth/react";
 import { boolean } from "boolean";
+import NextLink from "next/link";
+import { signOut, useSession } from "next-auth/react";
+import React, { ElementType, useCallback } from "react";
+import { FiLayout, FiLogOut, FiSettings } from "react-icons/fi";
 
 interface MenuOption {
   name: string;
@@ -56,7 +56,7 @@ export function UserMenu() {
         <Menu>
           <MenuButton border="solid" borderRadius="full" borderWidth="thin" borderColor={borderColor}>
             <Box display="flex" alignItems="center" gap="3" p="1" paddingRight={[1, 1, 1, 6, 6]}>
-              <Avatar size="sm" bgImage={session?.user.image!}></Avatar>
+              <Avatar size="sm" bgImage={session!.user.image!}></Avatar>
               <Text data-cy="username" className="hidden lg:flex">
                 {session?.user.name || "New User"}
               </Text>

@@ -2,10 +2,11 @@
 
 import { Container, Grid } from "@chakra-ui/react";
 import React from "react";
-import { Chakra } from "@/styles/Chakra";
+
+import { NextAuthProvider } from "@/app/providers";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
-import { NextAuthProvider } from "@/app/providers";
+import { Chakra } from "@/styles/Chakra";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

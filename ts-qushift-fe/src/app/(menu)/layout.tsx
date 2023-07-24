@@ -1,15 +1,15 @@
 "use client";
 
-import { Header } from "@/components/Header";
-import { SideMenuLayout } from "@/components/SideMenuLayout";
-import { Footer } from "@/components/Footer";
 import { Box, Grid } from "@chakra-ui/react";
+import React from "react";
 import { FiLayout, FiMessageSquare } from "react-icons/fi";
 import { SWRConfig, SWRConfiguration } from "swr";
+
 import { NextAuthProvider } from "@/app/providers";
+import { Footer } from "@/components/Footer";
+import { Header } from "@/components/Header";
+import { SideMenuLayout } from "@/components/SideMenuLayout";
 import { Chakra } from "@/styles/Chakra";
-import { usePathname } from "next/navigation";
-import React from "react";
 
 const menuButtonOptions = [
   {
@@ -32,8 +32,6 @@ const swrConfig: SWRConfiguration = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  const path = usePathname();
-
   return (
     <html lang="en">
       <body>

@@ -15,24 +15,15 @@ import {
   useColorModeValue,
   useDisclosure,
 } from "@chakra-ui/react";
-import React, { useState } from "react";
-import useSWRMutation from "swr/mutation";
+import React, { useRef, useState } from "react";
 import { RiUserAddLine } from "react-icons/ri";
+import useSWRMutation from "swr/mutation";
+
 import { post } from "@/lib/api";
 import { colors } from "@/styles/Theme/colors";
 
-interface UserValue {
-  checked: boolean;
-  value: string;
-}
-
-interface FlagCreationState {
-  user_values: UserValue[];
-  submittable: boolean;
-}
-
 export const CreatableMembersElement = () => {
-  const firstFieldRef = React.useRef(null);
+  const firstFieldRef = useRef<HTMLUListElement | null>(null);
   const { onOpen, onClose, isOpen } = useDisclosure();
 
   return (
@@ -60,8 +51,8 @@ export const CreatableMembersElement = () => {
 };
 
 interface FormProps {
-  firstFieldRef: React.RefObject<any>;
-  onClose;
+  firstFieldRef?: React.RefObject<HTMLUListElement>;
+  onClose: () => void;
 }
 
 interface TopicProps {
@@ -81,7 +72,7 @@ const fakeMembers = [
   },
 ];
 
-const SubmitForm = ({ firstFieldRef, onClose }: FormProps) => {
+const SubmitForm: React.FC<FormProps> = ({ firstFieldRef, onClose }) => {
   const [submittable, setSubmittable] = useState(false);
 
   const [addUsers, setAddUsers] = useState<string[]>([]);
@@ -98,6 +89,7 @@ const SubmitForm = ({ firstFieldRef, onClose }: FormProps) => {
       setAddUsers([...addUsers, userId]);
       handleChange();
     } else {
+      /* empty */
     }
   };
 
@@ -114,7 +106,7 @@ const SubmitForm = ({ firstFieldRef, onClose }: FormProps) => {
     // }));
   };
 
-  const submitTopic = () => {
+  const submitTopic = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     event.preventDefault();
 
     console.log(addUsers);

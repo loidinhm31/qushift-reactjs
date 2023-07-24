@@ -1,18 +1,21 @@
 import { Badge, Box, Button, CircularProgress, List, ListItem } from "@chakra-ui/react";
-import React, { Dispatch, useCallback, useEffect, useState } from "react";
 import { redirect, usePathname, useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+import React, { Dispatch, useCallback, useEffect, useState } from "react";
+import useSWR from "swr";
+import useSWRMutation from "swr/mutation";
+
+import { useEventStream } from "@/hooks/eventstream/useEventStream";
+import { Action } from "@/hooks/message/useMessageReducer";
 import { get, post } from "@/lib/api";
 import { Member, Topic } from "@/types/Conversation";
-import useSWRMutation from "swr/mutation";
-import { useSession } from "next-auth/react";
+
 import { CreatableTopicElement } from "./CreatableTopicElement";
-import { useEventStream } from "@/hooks/eventstream/useEventStream";
-import useSWR from "swr";
 
 interface TopicProps {
   currTopicId?: string;
   sendSignal: boolean;
-  dispatch?: Dispatch<any>;
+  dispatch?: Dispatch<Action>;
 }
 
 export function TopicMenu({ currTopicId, sendSignal, dispatch }: TopicProps) {

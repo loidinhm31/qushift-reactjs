@@ -1,6 +1,7 @@
-import * as process from "process";
-import { withoutRole } from "@/lib/auth";
 import { getSession } from "next-auth/react";
+import * as process from "process";
+
+import { withoutRole } from "@/lib/auth";
 
 const handler = withoutRole("banned", async (req, res, token) => {
   const session = await getSession({ req });

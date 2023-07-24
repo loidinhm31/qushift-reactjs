@@ -1,4 +1,5 @@
 import { getSession } from "next-auth/react";
+
 import { withoutRole } from "@/lib/auth";
 
 const handler = withoutRole("banned", async (req, res, token) => {
@@ -6,7 +7,7 @@ const handler = withoutRole("banned", async (req, res, token) => {
   const session = await getSession({ req });
 
   const { id } = req.query;
-  let { start } = req.query;
+  const { start } = req.query;
 
   const headers = new Headers({
     Authorization: `Bearer ${token.accessToken}`,

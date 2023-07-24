@@ -3,10 +3,10 @@
 import { Box, Divider, Flex, Grid, Icon, Text, useColorModeValue } from "@chakra-ui/react";
 import Head from "next/head";
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { useSession } from "next-auth/react";
 import React, { useEffect } from "react";
 import { MdOutlineEdit } from "react-icons/md";
-import { useSession } from "next-auth/react";
-import { redirect } from "next/navigation";
 
 export default function Account() {
   const backgroundColor = useColorModeValue("white", "gray.700");

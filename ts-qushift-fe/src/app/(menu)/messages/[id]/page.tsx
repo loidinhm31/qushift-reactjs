@@ -2,18 +2,19 @@
 
 import { Box, HStack, Stack, useColorModeValue, VStack } from "@chakra-ui/react";
 import Head from "next/head";
-import { TopicMenu } from "@/components/Topic/TopicMenu";
-import React, { useEffect, useReducer, useState } from "react";
-import { InputBox } from "@/components/Messages/InputBox";
-import { useSession } from "next-auth/react";
-import { MessageBox } from "@/components/Messages/MessageBox";
-import useSWR from "swr";
-import { Topic } from "@/types/Conversation";
-import { get } from "@/lib/api";
-import { useRouter } from "next/router";
-import { initialState, useMessageReducer } from "@/hooks/message/useMessageReducer";
-import { TopicMember } from "@/components/Topic/TopicMember";
 import { redirect } from "next/navigation";
+import { useRouter } from "next/router";
+import { useSession } from "next-auth/react";
+import React, { useEffect, useReducer, useState } from "react";
+import useSWR from "swr";
+
+import { InputBox } from "@/components/Messages/InputBox";
+import { MessageBox } from "@/components/Messages/MessageBox";
+import { TopicMember } from "@/components/Topic/TopicMember";
+import { TopicMenu } from "@/components/Topic/TopicMenu";
+import { initialState, useMessageReducer } from "@/hooks/message/useMessageReducer";
+import { get } from "@/lib/api";
+import { Topic } from "@/types/Conversation";
 
 export default function MessageDetail({ params }: { params: { id: string } }) {
   const router = useRouter();
@@ -29,7 +30,7 @@ export default function MessageDetail({ params }: { params: { id: string } }) {
 
   const [msgState, dispatch] = useReducer(useMessageReducer, initialState);
 
-  const { isLoading, mutate, error } = useSWR<Topic>(`/api/topics/${params.id}`, get, {
+  useSWR<Topic>(`/api/topics/${params.id}`, get, {
     onSuccess: (data) => {
       setCurrTopic(data);
     },

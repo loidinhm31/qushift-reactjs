@@ -3,11 +3,10 @@
 import { Button, ButtonProps, Input, Stack, useColorMode, useColorModeValue } from "@chakra-ui/react";
 import Head from "next/head";
 import { useSearchParams } from "next/navigation";
+import { signIn } from "next-auth/react";
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { FaBug, FaEnvelope, FaUser } from "react-icons/fa";
-import { ClientSafeProvider, signIn } from "next-auth/react";
-import { Role, RoleSelect } from "@/components/RoleSelect";
+import { FaEnvelope, FaUser } from "react-icons/fa";
 
 export type SignInErrorTypes =
   | "Signin"
@@ -53,7 +52,7 @@ export default function Signin() {
       <Stack spacing="2">
         {/*{debug && <DebugSigninForm credentials={debug} bgColorClass={bgColorClass} />}*/}
 
-        <SigninForm bgColorClass={bgColorClass} />
+        <SigninForm />
       </Stack>
       <hr className="mt-14 mb-4 h-px bg-gray-200 border-0" />
 
@@ -86,7 +85,7 @@ interface SigninFormData {
   password: string;
 }
 
-const SigninForm = ({ bgColorClass }: { bgColorClass: string }) => {
+const SigninForm = () => {
   const { register, handleSubmit } = useForm<SigninFormData>();
 
   function signinWithCredentials(data: SigninFormData) {
@@ -108,37 +107,37 @@ const SigninForm = ({ bgColorClass }: { bgColorClass: string }) => {
   );
 };
 
-interface DebugSigninFormData {
-  username: string;
-  role: Role;
-}
-
-const DebugSigninForm = ({ credentials, bgColorClass }: { credentials: ClientSafeProvider; bgColorClass: string }) => {
-  const { register, handleSubmit } = useForm<DebugSigninFormData>({
-    defaultValues: {
-      role: "general",
-      username: "dev",
-    },
-  });
-
-  function signinWithDebugCredentials(data: DebugSigninFormData) {
-    signIn(credentials.id, {
-      callbackUrl: "/dashboard",
-      ...data,
-    });
-  }
-
-  return (
-    <form
-      onSubmit={handleSubmit(signinWithDebugCredentials)}
-      className="border-2 border-orange-600 rounded-md p-4 relative"
-    >
-      <span className={`text-orange-600 absolute -top-3 left-5 ${bgColorClass} px-1`}>For Debugging Only</span>
-      <Stack>
-        <Input variant="outline" size="lg" placeholder="Username" {...register("username")} />
-        <RoleSelect {...register("role")}></RoleSelect>
-        <SigninButton leftIcon={<FaBug />}>Continue with Debug User</SigninButton>
-      </Stack>
-    </form>
-  );
-};
+// interface DebugSigninFormData {
+//   username: string;
+//   role: Role;
+// }
+//
+// const DebugSigninForm = ({ credentials, bgColorClass }: { credentials: ClientSafeProvider; bgColorClass: string }) => {
+//   const { register, handleSubmit } = useForm<DebugSigninFormData>({
+//     defaultValues: {
+//       role: "general",
+//       username: "dev",
+//     },
+//   });
+//
+//   function signinWithDebugCredentials(data: DebugSigninFormData) {
+//     signIn(credentials.id, {
+//       callbackUrl: "/dashboard",
+//       ...data,
+//     });
+//   }
+//
+//   return (
+//     <form
+//       onSubmit={handleSubmit(signinWithDebugCredentials)}
+//       className="border-2 border-orange-600 rounded-md p-4 relative"
+//     >
+//       <span className={`text-orange-600 absolute -top-3 left-5 ${bgColorClass} px-1`}>For Debugging Only</span>
+//       <Stack>
+//         <Input variant="outline" size="lg" placeholder="Username" {...register("username")} />
+//         <RoleSelect {...register("role")}></RoleSelect>
+//         <SigninButton leftIcon={<FaBug />}>Continue with Debug User</SigninButton>
+//       </Stack>
+//     </form>
+//   );
+// };

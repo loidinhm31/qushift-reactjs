@@ -1,9 +1,30 @@
-export const initialState = {
+interface State {
+  selectedId: string;
+  message: string;
+}
+
+interface ChangedSelectionAction {
+  type: "changed_selection";
+  topicId: string;
+}
+
+interface EditedMessageAction {
+  type: "edited_message";
+  message: string;
+}
+
+interface SentMessageAction {
+  type: "sent_message";
+}
+
+export type Action = ChangedSelectionAction | EditedMessageAction | SentMessageAction;
+
+export const initialState: State = {
   selectedId: "",
   message: "",
 };
 
-export function useMessageReducer(state, action) {
+export function useMessageReducer(state: State, action: Action): State {
   switch (action.type) {
     case "changed_selection": {
       return {
@@ -25,7 +46,7 @@ export function useMessageReducer(state, action) {
       };
     }
     default: {
-      throw Error("Unknown action: " + action.type);
+      throw new Error("Unknown action: " + action);
     }
   }
 }

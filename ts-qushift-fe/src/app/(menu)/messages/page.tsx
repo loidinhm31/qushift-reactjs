@@ -2,13 +2,14 @@
 
 import { Box, HStack, Progress, useColorModeValue } from "@chakra-ui/react";
 import Head from "next/head";
-import { TopicMenu } from "@/components/Topic/TopicMenu";
-import React, { useEffect } from "react";
+import { redirect, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+import React, { useEffect } from "react";
 import useSWRImmutable from "swr/immutable";
+
+import { TopicMenu } from "@/components/Topic/TopicMenu";
 import { get } from "@/lib/api";
 import { Topic } from "@/types/Conversation";
-import { redirect, useRouter } from "next/navigation";
 
 export default function Message() {
   const { data: session } = useSession();
@@ -32,14 +33,14 @@ export default function Message() {
       for (let i = 0; i < data.length; i++) {
         const members = data[i].members;
         for (let j = 0; j < members!.length; j++) {
-          if (members![j].userId == session.user.id && members![j].checkSeen) {
+          if (members![j].userId === session.user.id && members![j].checkSeen) {
             router.replace(`/messages/${data[i].id}`);
             return;
           }
         }
       }
     }
-  }, [session, data]);
+  }, [session, data, router]);
 
   return (
     <>
