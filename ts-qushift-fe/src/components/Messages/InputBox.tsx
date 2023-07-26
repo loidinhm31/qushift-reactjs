@@ -17,7 +17,7 @@ interface TopicProps {
 export function InputBox({ currTopicId, message, dispatch }: TopicProps) {
   const { data: session } = useSession();
 
-  const { trigger } = useSWRMutation("/api/messages/send_message", post);
+  const { trigger } = useSWRMutation("/api/messages", post);
 
   const handleSubmit = () => {
     if (message.trim().length !== 0) {

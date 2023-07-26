@@ -2,8 +2,7 @@
 
 import { Box, HStack, Stack, useColorModeValue, VStack } from "@chakra-ui/react";
 import Head from "next/head";
-import { redirect } from "next/navigation";
-import { useRouter } from "next/router";
+import { redirect, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import React, { useEffect, useReducer, useState } from "react";
 import useSWR from "swr";
@@ -24,7 +23,7 @@ export default function MessageDetail({ params }: { params: { id: string } }) {
   const boxBgColor = useColorModeValue("white", "gray.800");
   const boxAccentColor = useColorModeValue("gray.200", "gray.900");
 
-  const [sendSignal, setSendSignal] = useState<boolean>(false);
+  const [wasSentSignal, setWasSentSignal] = useState<boolean>(false);
 
   const [currTopic, setCurrTopic] = useState<Topic>();
 
@@ -36,7 +35,7 @@ export default function MessageDetail({ params }: { params: { id: string } }) {
     },
     onError: () => {
       router.push("/404");
-    },
+    }
   });
 
   useEffect(() => {
@@ -50,10 +49,10 @@ export default function MessageDetail({ params }: { params: { id: string } }) {
     <Stack className="sticky sm:h-full">
       <Head>
         <title>QuShift - {currTopic && currTopic.name}</title>
-        <meta name="description" content="TODO" />
+        <meta name="description" />
       </Head>
 
-      <HStack className="gap-2 sm:flex sm:flex-col sm:justify-between p-4 h-full">
+      <HStack className="gap-2 sm:flex sm:flex-col sm:justify-between p-4 h-full" alignItems="flex-start">
         <Box
           width={["100%", "100%", "100px", "fit-content"]}
           backgroundColor={boxBgColor}
@@ -62,7 +61,7 @@ export default function MessageDetail({ params }: { params: { id: string } }) {
           borderRadius="xl"
           className="p-4 h-full shadow"
         >
-          <TopicMenu currTopicId={params.id} sendSignal={sendSignal} dispatch={dispatch} />
+          <TopicMenu currTopicId={params.id} sendSignal={wasSentSignal} dispatch={dispatch} />
         </Box>
 
         <Box className="p-4 h-full">
@@ -80,9 +79,9 @@ export default function MessageDetail({ params }: { params: { id: string } }) {
             {currTopic && currTopic.name}
           </Box>
 
-          <HStack h="full">
+          <HStack h="full" display="flex" alignItems="flex-start">
             <VStack align="stretch" className="h-full">
-              <MessageBox key={params.id} topicId={params.id} onMouseAction={setSendSignal} />
+              <MessageBox key={params.id} topicId={params.id} onMouseAction={setWasSentSignal} />
 
               <InputBox currTopicId={params.id} message={msgState.message} dispatch={dispatch} />
             </VStack>

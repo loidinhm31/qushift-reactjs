@@ -24,7 +24,10 @@ export function MessageBox(messageProps: MessageProps) {
   const [prevPage, setPrevPage] = useState<number>(-1); // storing prev page number
   const [wasLastList, setWasLastList] = useState<boolean>(false); // setting a flag to know the last list
 
-  const { isLoading } = useSWR<Message[]>(`../api/messages/${messageProps.topicId}/?start=${currPage}`, get, {
+  // Control event source to work with SSE for the incoming message
+  const incomingMessage = useEventStreamBreakState<Message>(`/api/stream/messages/?topicId=${messageProps.topicId}`);
+
+  const { isLoading } = useSWR<Message[]>(`/api/messages/${messageProps.topicId}/?start=${currPage}`, get, {
     onSuccess: (data) => {
       if (currPage === 0) {
         // Get history messages
@@ -44,9 +47,6 @@ export function MessageBox(messageProps: MessageProps) {
       }
     },
   });
-
-  // Control event source to work with SSE for the incoming message
-  const incomingMessage = useEventStreamBreakState<Message>(`../api/stream/messages/?topicId=${messageProps.topicId}`);
 
   const scrollToBottom = () => {
     boxEndRef.current?.scrollIntoView({ behavior: "smooth" });

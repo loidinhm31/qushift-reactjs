@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
-export const useEventStream = <Type extends any>(endpoint: string): Type => {
+
+export const useEventStream = <Type>(endpoint: string): Type | undefined => {
   const [value, setValue] = useState<Type>();
 
   useEffect(() => {
@@ -8,19 +9,19 @@ export const useEventStream = <Type extends any>(endpoint: string): Type => {
 
     const eventSource = new EventSource(endpoint);
 
-    eventSource.onopen = (event: any) => {
+    eventSource.onopen = (event: Event) => {
       console.log("open", event);
     };
 
-    eventSource.onmessage = (event: any) => {
+    eventSource.onmessage = (event: MessageEvent) => {
       const obj = JSON.parse(event.data);
       setValue(obj);
     };
 
-    eventSource.onerror = (event: any) => {
+    eventSource.onerror = (event: Event) => {
       console.error(`Event source has failed for reason: ${JSON.stringify(event)}`);
-      if (event.readyState === EventSource.CLOSED) {
-        eventSource.close();
+      if ((event as unknown as EventSource).readyState === EventSource.CLOSED) {
+        (eventSource as EventSource).close();
       }
     };
 
@@ -33,7 +34,7 @@ export const useEventStream = <Type extends any>(endpoint: string): Type => {
   return value;
 };
 
-export const useEventStreamBreakState = <Type extends any>(endpoint: string): Type => {
+export const useEventStreamBreakState = <Type>(endpoint: string): Type | undefined => {
   const [value, setValue] = useState<Type>();
 
   useEffect(() => {
@@ -41,19 +42,19 @@ export const useEventStreamBreakState = <Type extends any>(endpoint: string): Ty
 
     const eventSource = new EventSource(endpoint);
 
-    eventSource.onopen = (event: any) => {
+    eventSource.onopen = (event: Event) => {
       console.log("open", event);
     };
 
-    eventSource.onmessage = (event: any) => {
+    eventSource.onmessage = (event: MessageEvent) => {
       const obj = JSON.parse(event.data);
       setValue(obj);
     };
 
-    eventSource.onerror = (event: any) => {
+    eventSource.onerror = (event: Event) => {
       console.error(`Event source has failed for reason: ${JSON.stringify(event)}`);
-      if (event.readyState === EventSource.CLOSED) {
-        eventSource.close();
+      if ((event as unknown as EventSource).readyState === EventSource.CLOSED) {
+        (eventSource as EventSource).close();
       }
     };
 

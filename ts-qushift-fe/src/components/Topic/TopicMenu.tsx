@@ -1,7 +1,7 @@
 import { Badge, Box, Button, CircularProgress, List, ListItem } from "@chakra-ui/react";
 import { redirect, usePathname, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import React, { Dispatch, useCallback, useEffect, useState } from "react";
+import { Dispatch, useCallback, useEffect, useState } from "react";
 import useSWR from "swr";
 import useSWRMutation from "swr/mutation";
 
@@ -18,7 +18,7 @@ interface TopicProps {
   dispatch?: Dispatch<Action>;
 }
 
-export function TopicMenu({ currTopicId, sendSignal, dispatch }: TopicProps) {
+export function TopicMenu({ currTopicId, sendSignal: wasSentSignal, dispatch }: TopicProps) {
   const router = useRouter();
   const pathname = usePathname();
 
@@ -28,10 +28,13 @@ export function TopicMenu({ currTopicId, sendSignal, dispatch }: TopicProps) {
 
   const [msgMap, setMsgMap] = useState<Map<string, string>>(new Map());
 
-  const { trigger } = useSWRMutation("/api/messages/send_signal", post);
+  const { trigger: sendSignal } = useSWRMutation("/api/messages/signals", post);
+
+  // Control event source to work with SSE for incoming notify
+  const topic = useEventStream<Topic>(`/api/stream/topics`);
 
   // Get all topics
-  const { data, isLoading, isValidating, mutate } = useSWR(`/api/topics/page/?start=0`, get, {
+  const { data, isLoading, isValidating, mutate } = useSWR(`/api/topics?start=0`, get, {
     onSuccess: (data) => {
       setTopics(data);
     },
@@ -63,9 +66,6 @@ export function TopicMenu({ currTopicId, sendSignal, dispatch }: TopicProps) {
     },
     [pathname],
   );
-
-  // Control event source to work with SSE for incoming notify
-  const topic = useEventStream<Topic>(`/api/stream/topics`);
 
   // Listening the incoming notify
   useEffect(() => {
@@ -102,59 +102,58 @@ export function TopicMenu({ currTopicId, sendSignal, dispatch }: TopicProps) {
 
   // Send seen signal to server
   useEffect(() => {
-    if (sendSignal) {
+    if (wasSentSignal) {
       if (msgMap.get(currTopicId!) !== "0" && msgMap.get(currTopicId!) !== undefined) {
         console.log(`Sending signal for ${currTopicId}...`);
 
-        trigger({ currTopicId }).finally(() => {
+        sendSignal({ currTopicId }).finally(() => {
           msgMap.set(currTopicId as string, "0");
         });
       }
     }
-  }, [sendSignal]);
+  }, [wasSentSignal]);
 
   return (
     <Box>
       <CreatableTopicElement>
-        <Box />
-      </CreatableTopicElement>
-      <Box overflowY="auto" maxHeight="700px" className="overflow-y-auto p-3 w-full">
-        {isLoading && <CircularProgress isIndeterminate />}
+        <Box overflowY="auto" maxHeight="700px" className="overflow-y-auto p-3 w-full">
+          {isLoading && <CircularProgress isIndeterminate />}
 
-        <List className="grid grid-cols-3 col-span-3 sm:flex sm:flex-col gap-2">
-          {topics &&
-            topics.map((item, index) => (
-              <ListItem
-                onClick={() => goToTopic(item.id)}
-                key={`${item.id}-${index}`}
-                style={{ textDecoration: "none" }}
-              >
-                <Button
-                  justifyContent={["center", "center", "center", "left"]}
-                  gap="3"
-                  size="lg"
-                  width="xs"
-                  bg={currTopicId === item.id ? "blue.500" : undefined}
-                  _hover={currTopicId === item.id ? { bg: "blue.600" } : undefined}
+          <List className="grid grid-cols-3 col-span-3 sm:flex sm:flex-col gap-2">
+            {topics &&
+              topics.map((item, index) => (
+                <ListItem
+                  onClick={() => goToTopic(item.id)}
+                  key={`${item.id}-${index}`}
+                  style={{ textDecoration: "none" }}
                 >
-                  <Box
-                    noOfLines={1}
-                    fontWeight="normal"
-                    color={currTopicId === item.id ? "white" : undefined}
-                    className="hidden lg:block"
+                  <Button
+                    justifyContent={["center", "center", "center", "left"]}
+                    gap="3"
+                    size="lg"
+                    width="xs"
+                    bg={currTopicId === item.id ? "blue.500" : undefined}
+                    _hover={currTopicId === item.id ? { bg: "blue.600" } : undefined}
                   >
-                    {item.name}
-                    {msgMap.get(item.id) !== "0" && (
-                      <Badge ml="1" fontSize="0.9em" colorScheme="red">
-                        {msgMap.get(item.id)}
-                      </Badge>
-                    )}
-                  </Box>
-                </Button>
-              </ListItem>
-            ))}
-        </List>
-      </Box>
+                    <Box
+                      noOfLines={1}
+                      fontWeight="normal"
+                      color={currTopicId === item.id ? "white" : undefined}
+                      className="hidden lg:block"
+                    >
+                      {item.name}
+                      {msgMap.get(item.id) !== "0" && (
+                        <Badge ml="1" fontSize="0.9em" colorScheme="red">
+                          {msgMap.get(item.id)}
+                        </Badge>
+                      )}
+                    </Box>
+                  </Button>
+                </ListItem>
+              ))}
+          </List>
+        </Box>
+      </CreatableTopicElement>
     </Box>
   );
 }

@@ -19,7 +19,7 @@ export default function Message() {
   const boxBgColor = useColorModeValue("white", "gray.800");
   const boxAccentColor = useColorModeValue("gray.200", "gray.900");
 
-  const { isLoading, data } = useSWRImmutable<Topic[]>(`../api/topics/page/?start=0`, get);
+  const { isLoading, data } = useSWRImmutable<Topic[]>(`/api/topics?start=0`, get);
 
   useEffect(() => {
     if (session && !session.user) {
