@@ -86,7 +86,7 @@ const SubmitForm: React.FC<FormProps> = ({ firstFieldRef, onClose }) => {
     topicMembers: [],
   });
 
-  const { trigger } = useSWRMutation("/api/topics", post);
+  const { trigger: addTopic } = useSWRMutation("/api/topics", post);
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.value.length > 0) {
@@ -112,7 +112,7 @@ const SubmitForm: React.FC<FormProps> = ({ firstFieldRef, onClose }) => {
 
     // TODO(#2) api for add users in a topic
 
-    trigger(topicForm);
+    addTopic(topicForm);
 
     setTopicForm({ topicName: "", topicMembers: [] });
 
