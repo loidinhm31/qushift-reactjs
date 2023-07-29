@@ -1,23 +1,31 @@
 package com.flo.qushift.controller;
 
-import com.flo.qushift.document.Message;
+import java.util.List;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.flo.qushift.document.StreamTopic;
 import com.flo.qushift.document.Topic;
 import com.flo.qushift.dto.TopicDto;
 import com.flo.qushift.service.TopicService;
+
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.List;
-
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/topics")
+@RequestMapping("/v1/topics")
 public class TopicController {
 
     private final TopicService topicService;
@@ -30,8 +38,8 @@ public class TopicController {
 
     @GetMapping(produces = MediaType.APPLICATION_NDJSON_VALUE)
     public Mono<ResponseEntity<List<Topic>>> retrieveTopics(@RequestParam Integer start,
-                                                              @RequestParam Integer size,
-                                                              @RequestParam String userId) {
+                                                            @RequestParam Integer size,
+                                                            @RequestParam String userId) {
         // TODO remove userId when not using
         return topicService.getPaginatedTopics(start, size, userId)
                 .collectList()
@@ -44,8 +52,8 @@ public class TopicController {
                 .map(ResponseEntity::ok);
     }
 
-    @GetMapping(value = "/stream/{receiverId}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public Flux<StreamTopic> retrieveMessagesForReceiver(@PathVariable String receiverId) {
+    @GetMapping(value = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<StreamTopic> retrieveMessagesForReceiver(@RequestParam String receiverId) {
         return topicService.getStreamMessagesByReceiver(receiverId);
     }
 

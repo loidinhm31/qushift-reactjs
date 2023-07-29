@@ -10,5 +10,6 @@ spring:
                     introspection-uri: http://go-qushift-auth-service:5000/api/v1/auth/verify
                     client-id: QSHIFT_API_SECRET
                     client-secret: ofBYMfWcT48VYenq8kh0jzdYegxxSPAZ
+
 client:
     frontend-endpoint: http://nextjs-qushift-frontend:4000
