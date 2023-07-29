@@ -29,7 +29,7 @@ export default function MessageDetail({ params }: { params: { id: string } }) {
 
   const [msgState, dispatch] = useReducer(useMessageReducer, initialState);
 
-  useSWR<Topic>(`/api/topics/${params.id}`, get, {
+  useSWR<Topic>(`/api/v1/topics/${params.id}`, get, {
     onSuccess: (data) => {
       setCurrTopic(data);
     },

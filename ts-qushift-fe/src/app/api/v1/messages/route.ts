@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
     body: JSON.stringify(data)
   };
 
-  const response = await fetch(`${process.env.API_BASE_URL}/messages`, requestOptions);
+  const response = await fetch(`${process.env.API_BASE_URL}/api/v1/messages`, requestOptions);
 
   return new Response(await response.json(), {
     status: 200

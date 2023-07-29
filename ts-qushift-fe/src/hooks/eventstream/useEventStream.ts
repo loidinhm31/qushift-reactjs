@@ -19,7 +19,7 @@ export const useEventStream = <Type>(endpoint: string): Type | undefined => {
     };
 
     eventSource.onerror = (event: Event) => {
-      console.error(`Event source has failed for reason: ${JSON.stringify(event)}`);
+      console.error("Event source has failed");
       if ((event as unknown as EventSource).readyState === EventSource.CLOSED) {
         (eventSource as EventSource).close();
       }
@@ -52,7 +52,7 @@ export const useEventStreamBreakState = <Type>(endpoint: string): Type | undefin
     };
 
     eventSource.onerror = (event: Event) => {
-      console.error(`Event source has failed for reason: ${JSON.stringify(event)}`);
+      console.error("Event source has failed");
       if ((event as unknown as EventSource).readyState === EventSource.CLOSED) {
         (eventSource as EventSource).close();
       }

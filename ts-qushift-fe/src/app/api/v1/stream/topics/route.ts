@@ -1,5 +1,6 @@
 import EventSource from "eventsource";
 import { NextRequest } from "next/server";
+import { getServerSession } from "next-auth";
 import { getToken } from "next-auth/jwt";
 
 export async function GET(request: NextRequest) {
@@ -10,7 +11,7 @@ export async function GET(request: NextRequest) {
     });
   }
 
-  const topicId = request.nextUrl.searchParams.get("topicId");
+  const session = await getServerSession();
 
   console.log("connect to SSE topics stream");
 
@@ -24,7 +25,7 @@ export async function GET(request: NextRequest) {
   const writer = responseStream.writable.getWriter();
   const encoder = new TextEncoder();
 
-  const eventSource = new EventSource(`${process.env.API_BASE_URL}/messages/stream?topicId=${topicId}`, headers);
+  const eventSource = new EventSource(`${process.env.API_BASE_URL}/api/v1/topics/stream?receiverId=${session?.user.name}`, headers);
 
   eventSource.onopen = (event: Event) => {
     console.log("listen to sse endpoint now", event);

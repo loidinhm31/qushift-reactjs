@@ -28,13 +28,13 @@ export function TopicMenu({ currTopicId, sendSignal: wasSentSignal, dispatch }: 
 
   const [msgMap, setMsgMap] = useState<Map<string, string>>(new Map());
 
-  const { trigger: sendSignal } = useSWRMutation("/api/messages/signals", post);
+  const { trigger: sendSignal } = useSWRMutation("/api/v1/messages/signals", post);
 
   // Control event source to work with SSE for incoming notify
-  const topic = useEventStream<Topic>(`/api/stream/topics`);
+  const incomingTopic = useEventStream<Topic>(`/api/v1/stream/topics`);
 
   // Get all topics
-  const { data, isLoading, isValidating, mutate } = useSWR(`/api/topics?start=0`, get, {
+  const { data, isLoading, isValidating, mutate } = useSWR(`/api/v1/topics?start=0`, get, {
     onSuccess: (data) => {
       setTopics(data);
     },
@@ -64,41 +64,41 @@ export function TopicMenu({ currTopicId, sendSignal: wasSentSignal, dispatch }: 
 
       router.push(`/messages/${topicId}`);
     },
-    [pathname],
+    [dispatch, router],
   );
 
   // Listening the incoming notify
   useEffect(() => {
-    if (topic) {
-      if (topics && topic.isNew) {
-        if (!topics.some((t) => t.id === topic.originId)) {
-          console.log(`Adding new topic ${topic.originId}`);
-          setTopics([topic, ...topics]);
+    if (incomingTopic) {
+      if (topics && incomingTopic.isNew) {
+        if (!topics.some((t) => t.id === incomingTopic.originId)) {
+          console.log(`Adding new topic ${incomingTopic.originId}`);
+          setTopics([incomingTopic, ...topics]);
           // Force mutate data
           mutate(data);
         }
-      } else if (!topic.isNew) {
-        console.log(`Updating notification for receiver on topic ${topic.originId}...`);
-        const user = topic.members?.find((member) => member.userId === session!.user.id) as Member;
+      } else if (!incomingTopic.isNew) {
+        console.log(`Updating notification for receiver on topic ${incomingTopic.originId}...`);
+        const user = incomingTopic.members?.find((member) => member.userId === session!.user.id) as Member;
 
         if (!user.checkSeen) {
-          if (msgMap.has(topic.originId!)) {
+          if (msgMap.has(incomingTopic.originId!)) {
             const countSeen = user.notSeenCount;
             if (countSeen! > 99) {
-              msgMap.set(topic.originId!, "99+");
+              msgMap.set(incomingTopic.originId!, "99+");
             } else {
-              msgMap.set(topic.originId!, countSeen!.toString());
+              msgMap.set(incomingTopic.originId!, countSeen!.toString());
             }
           } else {
-            msgMap.set(topic.originId!, user.notSeenCount!.toString());
+            msgMap.set(incomingTopic.originId!, user.notSeenCount!.toString());
           }
         } else {
-          msgMap.set(topic.originId!, "0");
+          msgMap.set(incomingTopic.originId!, "0");
         }
         setMsgMap(new Map(msgMap));
       }
     }
-  }, [topic, currTopicId]);
+  }, [incomingTopic, currTopicId]);
 
   // Send seen signal to server
   useEffect(() => {

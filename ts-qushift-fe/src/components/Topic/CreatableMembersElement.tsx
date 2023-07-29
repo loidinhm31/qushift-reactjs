@@ -82,7 +82,7 @@ const SubmitForm: React.FC<FormProps> = ({ firstFieldRef, onClose }) => {
     topicMembers: [],
   });
 
-  const { trigger } = useSWRMutation("/api/topics/add_member", post, {});
+  const { trigger } = useSWRMutation("/api/v1/topics/add_member", post, {});
 
   const handleCheckboxState = (checked, userId) => {
     if (checked) {

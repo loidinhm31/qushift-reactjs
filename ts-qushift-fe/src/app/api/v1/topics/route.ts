@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
     Authorization: `Bearer ${token?.accessToken}`
   });
 
-  const topicRes = await fetch(`${process.env.API_BASE_URL}/topics?userId=${session?.user.name}&start=${start}&size=20`, {
+  const topicRes = await fetch(`${process.env.API_BASE_URL}/api/v1/topics?userId=${session?.user.name}&start=${start}&size=20`, {
     method: "GET",
     headers
   });
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
     })
   };
 
-  const response = await fetch(`${process.env.API_BASE_URL}/topics`, requestOptions);
+  const response = await fetch(`${process.env.API_BASE_URL}/api/v1/topics`, requestOptions);
   const message = await response.json();
 
   return new Response(JSON.stringify(message), {

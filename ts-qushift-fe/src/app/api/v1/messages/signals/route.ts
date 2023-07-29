@@ -16,7 +16,7 @@ const handler = withoutRole("banned", async (req, res, token) => {
   };
 
   const response = await fetch(
-    `${process.env.API_BASE_URL}/topics/signal/${currTopicId}?userId=${session.user.id}`,
+    `${process.env.API_BASE_URL}/api/v1/topics/signal/${currTopicId}?userId=${session?.user.name}`,
     requestOptions,
   );
 

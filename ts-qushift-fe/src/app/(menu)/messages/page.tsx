@@ -1,7 +1,6 @@
 "use client";
 
 import { Box, HStack, Progress, useColorModeValue } from "@chakra-ui/react";
-import Head from "next/head";
 import { redirect, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import React, { useEffect } from "react";
@@ -19,7 +18,7 @@ export default function Message() {
   const boxBgColor = useColorModeValue("white", "gray.800");
   const boxAccentColor = useColorModeValue("gray.200", "gray.900");
 
-  const { isLoading, data } = useSWRImmutable<Topic[]>(`/api/topics?start=0`, get);
+  const { isLoading, data } = useSWRImmutable<Topic[]>(`/api/v1/topics?start=0`, get);
 
   useEffect(() => {
     if (session && !session.user) {
@@ -40,15 +39,10 @@ export default function Message() {
         }
       }
     }
-  }, [session, data, router]);
+  }, [session, data]);
 
   return (
     <>
-      <Head>
-        <title>Messages</title>
-        <meta name="description" content="QuShift." />
-      </Head>
-
       <HStack className="gap-2 sm:flex sm:flex-col sm:justify-between p-4 h-full">
         <Box
           width={["100%", "100%", "100px", "fit-content"]}

@@ -25,9 +25,9 @@ export function MessageBox(messageProps: MessageProps) {
   const [wasLastList, setWasLastList] = useState<boolean>(false); // setting a flag to know the last list
 
   // Control event source to work with SSE for the incoming message
-  const incomingMessage = useEventStreamBreakState<Message>(`/api/stream/messages/?topicId=${messageProps.topicId}`);
+  const incomingMessage = useEventStreamBreakState<Message>(`/api/v1/stream/messages/?topicId=${messageProps.topicId}`);
 
-  const { isLoading } = useSWR<Message[]>(`/api/messages/${messageProps.topicId}/?start=${currPage}`, get, {
+  const { isLoading } = useSWR<Message[]>(`/api/v1/messages/${messageProps.topicId}/?start=${currPage}`, get, {
     onSuccess: (data) => {
       if (currPage === 0) {
         // Get history messages
