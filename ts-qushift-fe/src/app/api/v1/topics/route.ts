@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
     Authorization: `Bearer ${token?.accessToken}`
   });
 
-  const topicRes = await fetch(`${process.env.API_BASE_URL}/api/v1/topics?userId=${session?.user.name}&start=${start}&size=20`, {
+  const topicRes = await fetch(`${process.env.API_BASE_URL}/api/v1/topics?userId=${session?.user.id}&start=${start}&size=20`, {
     method: "GET",
     headers
   });

@@ -7,7 +7,7 @@ import useSWRMutation from "swr/mutation";
 
 import { useEventStream } from "@/hooks/eventstream/useEventStream";
 import { Action } from "@/hooks/message/useMessageReducer";
-import { get, post } from "@/lib/api";
+import { get, put } from "@/lib/api";
 import { Member, Topic } from "@/types/Conversation";
 
 import { CreatableTopicElement } from "./CreatableTopicElement";
@@ -28,7 +28,7 @@ export function TopicMenu({ currTopicId, sendSignal: wasSentSignal, dispatch }: 
 
   const [msgMap, setMsgMap] = useState<Map<string, string>>(new Map());
 
-  const { trigger: sendSignal } = useSWRMutation("/api/v1/messages/signals", post);
+  const { trigger: sendSignal } = useSWRMutation("/api/v1/messages/signals", put);
 
   // Control event source to work with SSE for incoming notify
   const incomingTopic = useEventStream<Topic>(`/api/v1/stream/topics`);
@@ -141,7 +141,7 @@ export function TopicMenu({ currTopicId, sendSignal: wasSentSignal, dispatch }: 
                       color={currTopicId === item.id ? "white" : undefined}
                       className="hidden lg:block"
                     >
-                      {item.name}
+                      <div>{item.name}</div>
                       {msgMap.get(item.id) !== "0" && (
                         <Badge ml="1" fontSize="0.9em" colorScheme="red">
                           {msgMap.get(item.id)}

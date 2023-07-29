@@ -48,7 +48,7 @@ export function MessageTableEntry(props: MessageTableEntryProps) {
 
   return (
     <>
-      {item.sender === session.user.id && (
+      {item.sender === session?.user.id && (
         <Stack spacing="4" alignItems="flex-end">
           <HStack w={["full", "full", "full", "fit-content"]} gap={2}>
             <VStack>
@@ -74,7 +74,7 @@ export function MessageTableEntry(props: MessageTableEntryProps) {
         </Stack>
       )}
 
-      {item.sender !== session.user.id && (
+      {item.sender !== session?.user.id && (
         <Stack spacing="4">
           <HStack w={["full", "full", "full", "fit-content"]} gap={2}>
             <VStack>

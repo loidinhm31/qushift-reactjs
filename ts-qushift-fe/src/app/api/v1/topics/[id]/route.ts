@@ -19,7 +19,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     Authorization: `Bearer ${token.accessToken}`,
   });
 
-  const topicRes = await fetch(`${process.env.API_BASE_URL}/api/v1/topics/${id}?userId=${session?.user.name}`, {
+  const topicRes = await fetch(`${process.env.API_BASE_URL}/api/v1/topics/${id}?userId=${session?.user.id}`, {
     method: "GET",
     headers,
   });

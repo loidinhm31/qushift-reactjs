@@ -3,7 +3,7 @@ import NextAuth from "next-auth";
 
 import { providers } from "@/lib/option";
 
-export const authOptions: AuthOptions = {
+const authOptions: AuthOptions = {
   providers: providers,
   pages: {
     signIn: "/signin",

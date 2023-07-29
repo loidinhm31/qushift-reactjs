@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
   const writer = responseStream.writable.getWriter();
   const encoder = new TextEncoder();
 
-  const eventSource = new EventSource(`${process.env.API_BASE_URL}/api/v1/topics/stream?receiverId=${session?.user.name}`, headers);
+  const eventSource = new EventSource(`${process.env.API_BASE_URL}/api/v1/topics/stream?receiverId=${session?.user.id}`, headers);
 
   eventSource.onopen = (event: Event) => {
     console.log("listen to sse endpoint now", event);

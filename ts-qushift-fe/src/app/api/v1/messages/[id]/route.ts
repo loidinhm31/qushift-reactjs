@@ -21,7 +21,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   });
 
   const messagesRes = await fetch(
-    `${process.env.API_BASE_URL}/api/v1/messages?topicId=${id}&start=${start}&size=10&userId=${session?.user.name}`,
+    `${process.env.API_BASE_URL}/api/v1/messages?topicId=${id}&start=${start}&size=10&userId=${session?.user.id}`,
     {
       method: "GET",
       headers,
