@@ -1,6 +1,7 @@
 package server
 
 import (
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	authHttp "go-qushift-auth-service/internal/auth/delivery/http"
 	usersRepository "go-qushift-auth-service/internal/auth/repository"
@@ -26,6 +27,7 @@ func (s *Server) MapHandlers(g *gin.Engine) error {
 	// Init middlewares
 	//mw := middlewares.NewMiddlewareManager(aService)
 
+	g.Use(cors.Default())
 	apiV1 := g.Group("/api/v1")
 
 	health := apiV1.Group("/health")
