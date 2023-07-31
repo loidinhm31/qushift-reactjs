@@ -12,4 +12,4 @@ spring:
                     client-secret: ofBYMfWcT48VYenq8kh0jzdYegxxSPAZ
 
 client:
-    frontend-endpoint: http://nextjs-qushift-frontend:4000
+    frontend-endpoint: http://localhost:4000, http://nextjs-qushift-frontend:4000
