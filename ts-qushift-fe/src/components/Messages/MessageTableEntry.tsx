@@ -1,7 +1,6 @@
-import { Avatar, Box, HStack, Stack, useBreakpointValue, useColorModeValue, VStack } from "@chakra-ui/react";
-import { useSession } from "next-auth/react";
-import { useMemo } from "react";
+import { Chip } from "konsta/react";
 
+import { useUser } from "@/hooks/useUser";
 import { Message } from "@/types/Conversation";
 
 interface MessageTableEntryProps {
@@ -11,26 +10,7 @@ interface MessageTableEntryProps {
 export function MessageTableEntry(props: MessageTableEntryProps) {
   const { item } = props;
 
-  const { data: session } = useSession();
-
-  const backgroundColor = useColorModeValue("gray.100", "gray.700");
-  const backgroundColor2 = useColorModeValue("#DFE8F1", "#42536B");
-
-  const borderColor = useColorModeValue("blackAlpha.200", "whiteAlpha.200");
-
-  const inlineAvatar = useBreakpointValue({ base: true, sm: false });
-
-  const avatar = useMemo(
-    () => (
-      <Avatar
-        borderColor={borderColor}
-        size={inlineAvatar ? "xs" : "sm"}
-        mr={inlineAvatar ? 2 : 0}
-        src={"/images/logos/logo.png"}
-      />
-    ),
-    [borderColor, inlineAvatar],
-  );
+  const { defaultUser: user } = useUser();
 
   const getDateTime = (dateTime) => {
     const now = new Date(dateTime);
@@ -48,56 +28,55 @@ export function MessageTableEntry(props: MessageTableEntryProps) {
 
   return (
     <>
-      {item.sender === session?.user.id && (
-        <Stack spacing="4" alignItems="flex-end">
-          <HStack w={["full", "full", "full", "fit-content"]} gap={2}>
-            <VStack>
-              {!inlineAvatar && avatar}
-              <Box fontSize="sm">{item.sender}</Box>
-            </VStack>
-            <VStack>
-              <Box
-                gap="2"
-                width={["full", "full", "full", "fit-content"]}
-                maxWidth={["full", "full", "full", "2xl"]}
-                p="4"
-                borderRadius="md"
-                bg={backgroundColor}
-                whiteSpace="pre-wrap"
-              >
-                {inlineAvatar && avatar}
-                {item.content}
-              </Box>
-              <Box fontSize="xs">{getDateTime(item.createdAt)}</Box>
-            </VStack>
-          </HStack>
-        </Stack>
+      {item.sender === user?.id && (
+        <div className="space-y-4 flex flex-col items-end">
+          <div className="flex justify-center items-center w-full">
+            <div className="m-1 text-xs">{getDateTime(item.createdAt)}</div>
+          </div>
+          <div className="flex w-fit-content">
+            <div className="flex flex-row">
+              <div className="flex p-1">
+                <div>
+                  <div className="flex justify-end">
+                    <div className="text-sm">{item.sender}</div>
+                  </div>
+                  <div className="dark:bg-gray-800 gap-2w fit-content max-w-full p-4 rounded-md whitespace-pre-wrap">
+                    {item.content}
+                  </div>
+                </div>
+
+                <div className="flex items-end">
+                  <Chip className="m-1">{`${item.sender.at(0)?.toUpperCase()}`}</Chip>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
 
-      {item.sender !== session?.user.id && (
-        <Stack spacing="4">
-          <HStack w={["full", "full", "full", "fit-content"]} gap={2}>
-            <VStack>
-              {!inlineAvatar && avatar}
-              <Box fontSize="xs">{item.sender}</Box>
-            </VStack>
-
-            <VStack>
-              <Box
-                width={["full", "full", "full", "fit-content"]}
-                maxWidth={["full", "full", "full", "2xl"]}
-                p="4"
-                borderRadius="md"
-                bg={backgroundColor2}
-                whiteSpace="pre-wrap"
-              >
-                {inlineAvatar && avatar}
-                {item.content}
-              </Box>
-              <Box fontSize="sm">{getDateTime(item.createdAt)}</Box>
-            </VStack>
-          </HStack>
-        </Stack>
+      {item.sender !== user?.id && (
+        <div className="space-y-4 flex flex-col items-end">
+          <div className="flex justify-center items-center w-full">
+            <div className="m-1 text-xs">{getDateTime(item.createdAt)}</div>
+          </div>
+          <div className="flex w-fit-content">
+            <div className="flex flex-row">
+              <div className="flex p-1">
+                <div className="flex items-end">
+                  <Chip className="m-1">{`${item.sender.at(0)?.toUpperCase()}`}</Chip>
+                </div>
+                <div>
+                  <div className="flex justify-start">
+                    <div className="text-sm">{item.sender}</div>
+                  </div>
+                  <div className="dark:bg-sky-600 gap-2 w-fit-content max-w-full p-4 rounded-md whitespace-pre-wrap">
+                    {item.content}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </>
   );

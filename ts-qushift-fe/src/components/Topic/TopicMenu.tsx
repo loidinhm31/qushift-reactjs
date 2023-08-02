@@ -1,16 +1,15 @@
-import { Badge, Box, Button, CircularProgress, List, ListItem } from "@chakra-ui/react";
-import { redirect, usePathname, useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
-import { Dispatch, useCallback, useEffect, useState } from "react";
-import useSWR from "swr";
-import useSWRMutation from "swr/mutation";
+import { boolean } from "boolean";
+import { Block, Icon, Link, MenuList, MenuListItem, Preloader } from "konsta/react";
+import { usePathname, useRouter } from "next/navigation";
+import React, { Dispatch, useCallback, useEffect, useState } from "react";
 
-import { useEventStream } from "@/hooks/eventstream/useEventStream";
 import { Action } from "@/hooks/message/useMessageReducer";
-import { get, put } from "@/lib/api";
+import { useUser } from "@/hooks/useUser";
+import { getTopicsApi, useStreamTopicApi } from "@/service/messages";
 import { Member, Topic } from "@/types/Conversation";
 
 import { CreatableTopicElement } from "./CreatableTopicElement";
+import { TbLayoutSidebarLeftCollapse, TbLayoutSidebarRightCollapse } from "react-icons/tb";
 
 interface TopicProps {
   currTopicId?: string;
@@ -22,49 +21,65 @@ export function TopicMenu({ currTopicId, sendSignal: wasSentSignal, dispatch }: 
   const router = useRouter();
   const pathname = usePathname();
 
-  const { data: session } = useSession();
+  const { status, defaultUser: user } = useUser();
 
+  const [isHideTopic, setIsHideTopic] = useState(false);
+
+  const [isLoading, setIsLoading] = useState(true);
+  const [isMutate, setIsMutate] = useState(false);
   const [topics, setTopics] = useState<Topic[]>();
 
   const [msgMap, setMsgMap] = useState<Map<string, string>>(new Map());
 
-  const { trigger: sendSignal } = useSWRMutation("/api/v1/messages/signals", put);
-
   // Control event source to work with SSE for incoming notify
-  const incomingTopic = useEventStream<Topic>(`/api/v1/stream/topics`);
+  const incomingTopic = useStreamTopicApi(user);
 
   // Get all topics
-  const { data, isLoading, isValidating, mutate } = useSWR(`/api/v1/topics?start=0`, get, {
-    onSuccess: (data) => {
-      setTopics(data);
-    },
-  });
+  useEffect(() => {
+    if (status !== "loading") {
+      setIsLoading(true);
+
+      getTopicsApi(user)
+        .then((res) => res.data)
+        .then((data) => {
+          if (data) {
+            setTopics(data);
+          }
+        })
+        .finally(() => setIsLoading(false));
+    }
+  }, [pathname, status]);
 
   useEffect(() => {
-    if (session && !session.user) {
-      redirect("/signin");
-    }
-  }, [session]);
+    if (isMutate) {
+      setIsLoading(true);
 
-  // Reload invalidate data
-  useEffect(() => {
-    if (!isValidating) {
-      setTopics(data);
+      getTopicsApi(user)
+        .then((res) => res.data)
+        .then((data) => {
+          if (data) {
+            setTopics(data);
+          }
+        })
+        .finally(() => {
+          setIsLoading(false);
+          setIsMutate(false);
+        });
     }
-  }, [pathname]);
+  }, [isMutate]);
 
   const goToTopic = useCallback(
     (topicId: string) => {
       if (dispatch) {
         dispatch({
           type: "changed_selection",
-          topicId: topicId,
+          topicId: topicId
         });
       }
 
       router.push(`/messages/${topicId}`);
     },
-    [dispatch, router],
+    [dispatch, router]
   );
 
   // Listening the incoming notify
@@ -74,23 +89,24 @@ export function TopicMenu({ currTopicId, sendSignal: wasSentSignal, dispatch }: 
         if (!topics.some((t) => t.id === incomingTopic.originId)) {
           console.log(`Adding new topic ${incomingTopic.originId}`);
           setTopics([incomingTopic, ...topics]);
+
           // Force mutate data
-          mutate(data);
+          setIsMutate(true);
         }
       } else if (!incomingTopic.isNew) {
         console.log(`Updating notification for receiver on topic ${incomingTopic.originId}...`);
-        const user = incomingTopic.members?.find((member) => member.userId === session!.user.id) as Member;
+        const userMember = incomingTopic.members?.find((member: Member) => member.userId === user?.id);
 
-        if (!user.checkSeen) {
+        if (userMember && !userMember.checkSeen) {
           if (msgMap.has(incomingTopic.originId!)) {
-            const countSeen = user.notSeenCount;
+            const countSeen = userMember?.notSeenCount;
             if (countSeen! > 99) {
               msgMap.set(incomingTopic.originId!, "99+");
             } else {
               msgMap.set(incomingTopic.originId!, countSeen!.toString());
             }
           } else {
-            msgMap.set(incomingTopic.originId!, user.notSeenCount!.toString());
+            msgMap.set(incomingTopic.originId!, userMember.notSeenCount!.toString());
           }
         } else {
           msgMap.set(incomingTopic.originId!, "0");
@@ -106,54 +122,75 @@ export function TopicMenu({ currTopicId, sendSignal: wasSentSignal, dispatch }: 
       if (msgMap.get(currTopicId!) !== "0" && msgMap.get(currTopicId!) !== undefined) {
         console.log(`Sending signal for ${currTopicId}...`);
 
-        sendSignal({ currTopicId }).finally(() => {
-          msgMap.set(currTopicId as string, "0");
-        });
+        // sendSignal({ currTopicId }).finally(() => {
+        //   msgMap.set(currTopicId as string, "0");
+        // });
       }
     }
   }, [wasSentSignal]);
 
   return (
-    <Box>
-      <CreatableTopicElement>
-        <Box overflowY="auto" maxHeight="700px" className="overflow-y-auto p-3 w-full">
-          {isLoading && <CircularProgress isIndeterminate />}
+    <>
+      {isHideTopic ? (
+        <div className="my-4 py-4">
+          <Link
+            navbar
+            iconOnly
+            className="flex items-center justify-center p-1 rounded-full"
+            onClick={() => setIsHideTopic(!isHideTopic)}
+          >
+            <Icon
+              ios={<TbLayoutSidebarRightCollapse className="w-7 h-7" />}
+              material={<TbLayoutSidebarRightCollapse className="w-6 h-6" />} />
+          </Link>
+        </div>
 
-          <List className="grid grid-cols-3 col-span-3 sm:flex sm:flex-col gap-2">
+      ) : (
+        <div className="w-80 lt-md:w-32">
+          {isLoading && <Preloader />}
+
+          <Block className="flex flex-row lt-md:flex-col items-center gt-md:space-between">
+            <div className="flex items-center gt-md:w-full">
+              <div>
+                <p>Topics</p>
+              </div>
+              <div>
+                <Link
+                  navbar
+                  iconOnly
+                  className="flex items-center justify-center p-1 rounded-full"
+                  onClick={() => setIsHideTopic(!isHideTopic)}
+                >
+                  <Icon
+                    ios={<TbLayoutSidebarLeftCollapse className="w-7 h-7" />}
+                    material={<TbLayoutSidebarLeftCollapse className="w-6 h-6" />} />
+                </Link>
+              </div>
+            </div>
+            <div>
+              <CreatableTopicElement />
+            </div>
+
+          </Block>
+          <MenuList className="overflow-y-auto h-96">
             {topics &&
               topics.map((item, index) => (
-                <ListItem
-                  onClick={() => goToTopic(item.id)}
+                <MenuListItem
                   key={`${item.id}-${index}`}
-                  style={{ textDecoration: "none" }}
-                >
-                  <Button
-                    justifyContent={["center", "center", "center", "left"]}
-                    gap="3"
-                    size="lg"
-                    width="xs"
-                    bg={currTopicId === item.id ? "blue.500" : undefined}
-                    _hover={currTopicId === item.id ? { bg: "blue.600" } : undefined}
-                  >
-                    <Box
-                      noOfLines={1}
-                      fontWeight="normal"
-                      color={currTopicId === item.id ? "white" : undefined}
-                      className="hidden lg:block"
-                    >
-                      <div>{item.name}</div>
-                      {msgMap.get(item.id) !== "0" && (
-                        <Badge ml="1" fontSize="0.9em" colorScheme="red">
-                          {msgMap.get(item.id)}
-                        </Badge>
-                      )}
-                    </Box>
-                  </Button>
-                </ListItem>
+                  title={item.name}
+                  active={currTopicId === item.id}
+                  onClick={() => goToTopic(item.id!)}
+                  media={
+                    boolean(msgMap.get(item.id!) !== "0") && (
+                      <Icon badge={msgMap.get(item.id!)} badgeColors={{ bg: "bg-red-500" }} />
+                    )
+                  }
+                  className="whitespace-pre"
+                />
               ))}
-          </List>
-        </Box>
-      </CreatableTopicElement>
-    </Box>
+          </MenuList>
+        </div>)
+      }
+    </>
   );
 }

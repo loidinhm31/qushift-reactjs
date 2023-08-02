@@ -1,21 +1,11 @@
-import {
-  Avatar,
-  Box,
-  Link,
-  Menu,
-  MenuButton,
-  MenuDivider,
-  MenuGroup,
-  MenuItem,
-  MenuList,
-  Text,
-  useColorModeValue,
-} from "@chakra-ui/react";
 import { boolean } from "boolean";
-import NextLink from "next/link";
-import { signOut, useSession } from "next-auth/react";
-import React, { ElementType, useCallback } from "react";
+import { Block, Button, Chip, Link, MenuList, MenuListItem, Navbar, Page, Popup } from "konsta/react";
+import { useRouter } from "next/navigation";
+import React, { ElementType, useCallback, useState } from "react";
 import { FiLayout, FiLogOut, FiSettings } from "react-icons/fi";
+
+import { useUser } from "@/hooks/useUser";
+import { useAppSelector } from "@/hooks/redux";
 
 interface MenuOption {
   name: string;
@@ -26,12 +16,21 @@ interface MenuOption {
 }
 
 export function UserMenu() {
-  const borderColor = useColorModeValue("gray.300", "gray.600");
+  const { defaultUser: user } = useUser();
+  const auth = useAppSelector((state) => state.authReducer);
+
+  const router = useRouter();
+
+  const [popupOpened, setPopupOpened] = useState(false);
+
+  const goToItem = (path: string) => {
+    router.push(path);
+    setPopupOpened(false);
+  };
 
   const handleSignOut = useCallback(() => {
-    signOut({ callbackUrl: "/" });
+    // signOut({ callbackUrl: "/" });
   }, []);
-  const { data: session, status } = useSession();
 
   const options: MenuOption[] = [
     {
@@ -39,58 +38,62 @@ export function UserMenu() {
       href: "/dashboard",
       desc: "dashboard",
       icon: FiLayout,
-      isExternal: false,
+      isExternal: false
     },
     {
       name: "Account Settings",
       href: "/account",
       desc: "account_settings",
       icon: FiSettings,
-      isExternal: false,
-    },
+      isExternal: false
+    }
   ];
 
   return (
     <>
-      {boolean(session && status === "authenticated") && (
-        <Menu>
-          <MenuButton border="solid" borderRadius="full" borderWidth="thin" borderColor={borderColor}>
-            <Box display="flex" alignItems="center" gap="3" p="1" paddingRight={[1, 1, 1, 6, 6]}>
-              <Avatar size="sm" bgImage={session!.user.image!}></Avatar>
-              <Text data-cy="username" className="hidden lg:flex">
-                {session?.user.name || "New User"}
-              </Text>
-            </Box>
-          </MenuButton>
-          <MenuList p="2" borderRadius="xl" shadow="none">
-            <Box display="flex" flexDirection="column" alignItems="center" borderRadius="md" p="4">
-              <Text>{session?.user.name}</Text>
-            </Box>
-            <MenuDivider />
-            <MenuGroup>
-              {options.map((item) => (
-                <Link
-                  key={item.name}
-                  as={item.isExternal ? "a" : NextLink}
-                  isExternal={item.isExternal}
-                  href={item.href}
-                  _hover={{ textDecoration: "none" }}
-                >
-                  <MenuItem gap="3" borderRadius="md" p="4">
-                    <item.icon className="text-blue-500" aria-hidden="true" />
-                    <Text>{item.name}</Text>
-                  </MenuItem>
-                </Link>
-              ))}
-            </MenuGroup>
-            <MenuDivider />
-            <MenuItem gap="3" borderRadius="md" p="4" onClick={handleSignOut}>
-              <FiLogOut className="text-blue-500" aria-hidden="true" />
-              <Text>{"Sign Out"}</Text>
-            </MenuItem>
-          </MenuList>
-        </Menu>
+      {boolean(user.id !== undefined || auth.isAuthenticate) && (
+        <Block className="relative">
+          <Chip onClick={() => setPopupOpened(true)}>{user?.username || "New User"}</Chip>
+        </Block>
       )}
+
+      <Popup hidden={!popupOpened} opened={popupOpened} onBackdropClick={() => setPopupOpened(false)}>
+        <Page>
+          <Navbar
+            title="User Menu"
+            right={
+              <Link navbar onClick={() => setPopupOpened(false)}>
+                Close
+              </Link>
+            }
+          />
+
+          <Block className="space-y-4">
+            <div className="flex flex-col items-center rounded-md p-4">
+              <Chip>{user?.username}</Chip>
+            </div>
+            <div className="mt-2 border-t"></div>
+            <MenuList className="flex flex-col">
+              {options.map((item) => (
+                <MenuListItem
+                  key={item.name}
+                  title={item.name}
+                  media={<item.icon className="text-blue-500" aria-hidden="true" />}
+                  onClick={() => goToItem(item.href)}
+                />
+              ))}
+            </MenuList>
+            <div className="mt-2 border-t"></div>
+            <Button
+              className="hover:no-underline hover:text-blue-500 rounded-md p-4 flex items-center gap-3"
+              onClick={handleSignOut}
+            >
+              <FiLogOut className="text-blue-500" aria-hidden="true" />
+              <span>Sign Out</span>
+            </Button>
+          </Block>
+        </Page>
+      </Popup>
     </>
   );
 }

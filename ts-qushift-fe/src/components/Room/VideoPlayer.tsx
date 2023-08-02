@@ -1,4 +1,3 @@
-import { Box, Grid } from "@chakra-ui/react";
 import React, { useEffect, useRef, useState } from "react";
 import SimplePeer from "simple-peer";
 
@@ -48,21 +47,21 @@ const VideoPlayer = ({ peers, name, callAccepted, callEnded, stream, cameraStatu
   }, [cameraStatus, stream]);
 
   return (
-    <Grid>
+    <div>
       {stream && (
-        <Box className="{classes.paper}">
-          <Grid>
-            <Box>{name || "Name"}</Box>
+        <div className="{classes.paper}">
+          <div>
+            <p>{name || "Name"}</p>
             <video muted ref={myVideo} autoPlay playsInline className="{classes.video}" />
-          </Grid>
-        </Box>
+          </div>
+        </div>
       )}
 
       {!callEnded &&
         peers?.map((p, index) => {
           return <VideoElement key={index} peer={p} />;
         })}
-    </Grid>
+    </div>
   );
 };
 

@@ -1,14 +1,7 @@
-import Head from "next/head";
+"use client";
 
 const Dashboard = () => {
-  return (
-    <>
-      <Head>
-        <title>Dashboard</title>
-        <meta name="description" content="QuShift." />
-      </Head>
-    </>
-  );
+  return <></>;
 };
 
 export default Dashboard;

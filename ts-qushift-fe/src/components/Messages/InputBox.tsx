@@ -1,12 +1,11 @@
-import { Input } from "@chakra-ui/input";
-import { Box, HStack } from "@chakra-ui/react";
-import { useSession } from "next-auth/react";
+import { Block, Button } from "konsta/react";
 import React, { Dispatch } from "react";
-import { FiSend } from "react-icons/fi";
-import useSWRMutation from "swr/mutation";
+import { TbSend } from "react-icons/tb";
 
 import { Action } from "@/hooks/message/useMessageReducer";
-import { post } from "@/lib/api";
+import { useUser } from "@/hooks/useUser";
+import { makeMessageApi } from "@/service/messages";
+import { Message } from "@/types/Conversation";
 
 interface TopicProps {
   currTopicId: string;
@@ -15,19 +14,18 @@ interface TopicProps {
 }
 
 export function InputBox({ currTopicId, message, dispatch }: TopicProps) {
-  const { data: session } = useSession();
-
-  const { trigger } = useSWRMutation("/api/messages", post);
+  const { defaultUser: user } = useUser();
 
   const handleSubmit = () => {
     if (message.trim().length !== 0) {
-      const data = {
+      const data: Message = {
         content: message,
         receiver: "test-b", // TODO
-        sender: session?.user.id,
+        sender: user!.id!,
         topicId: currTopicId,
       };
-      trigger(data).finally(() => {
+
+      makeMessageApi(data, user).finally(() => {
         // Finally, clear input
         dispatch({
           type: "sent_message",
@@ -43,19 +41,10 @@ export function InputBox({ currTopicId, message, dispatch }: TopicProps) {
   };
 
   return (
-    <HStack w={["full", "full", "full", "fit-content"]} gap={2} className="p-4">
-      <Box _hover={{ cursor: "pointer", opacity: 0.9 }}>
-        <span className="input-group-text py-3" onClick={handleSubmit}>
-          <FiSend />
-        </span>
-      </Box>
-
-      <Input
-        width={["full", "full", "full", "xl"]}
-        p="4"
-        borderRadius="md"
-        type="input"
-        className="form-control"
+    <Block className="flex ">
+      <textarea
+        rows={4}
+        className="block w-full text-sm dark:bg-gray-700 dark:border-gray-600 rounded-md dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
         name="msg"
         value={message}
         onChange={(event) => {
@@ -66,6 +55,11 @@ export function InputBox({ currTopicId, message, dispatch }: TopicProps) {
         }}
         onKeyDown={(event) => handleEnterSubmit(event)}
       />
-    </HStack>
+      <Block className="cursor-pointer opacity-90 hover:opacity-90">
+        <Button className="input-group-text py-3" onClick={handleSubmit}>
+          <TbSend />
+        </Button>
+      </Block>
+    </Block>
   );
 }

@@ -1,4 +1,3 @@
-import { Box, Button, Grid, Input } from "@chakra-ui/react";
 import React, { useState } from "react";
 import { CopyToClipboard } from "react-copy-to-clipboard";
 import { BiPhone } from "react-icons/bi";
@@ -34,58 +33,46 @@ const Sidebar = (callProps: CallProps) => {
 
   return (
     <>
-      <Box className="{classes.container}">
-        <Box className="{classes.paper}">
+      <div className="{classes.container}">
+        <div className="{classes.paper}">
           <form className="{classes.root}" noValidate autoComplete="off">
-            <Grid className="{classes.gridContainer}">
-              <Grid className="{classes.padding}">
-                <Box>Account Info</Box>
-                <Input
+            <div className="{classes.gridContainer}">
+              <div className="{classes.padding}">
+                <div>Account Info</div>
+                <input
                   onChange={(e) => {
                     callProps.setName!(e.target.value);
                   }}
                   value={callProps.name}
                 />
                 <CopyToClipboard text={callProps.me} className="{classes.margin}">
-                  <Button variant="contained" color="primary">
-                    Copy Your ID
-                  </Button>
+                  <button color="primary">Copy Your ID</button>
                 </CopyToClipboard>
 
-                <Button onClick={switchCameraStatus}>
+                <button onClick={switchCameraStatus}>
                   {(callProps.cameraStatus && "Turn Off Camera") || "Turn On Camera"}
-                </Button>
-                <Button onClick={switchAudioStatus}>
+                </button>
+                <button onClick={switchAudioStatus}>
                   {(callProps.audioStatus && "Turn Off Audio") || "Turn On Audio"}
-                </Button>
-              </Grid>
+                </button>
+              </div>
 
-              <Grid className="{classes.padding}">
-                <Box>Make a call</Box>
-                <Input onChange={(e) => setIdToCall(e.target.value)} value={idToCall} />
+              <div className="{classes.padding}">
+                <div>Make a call</div>
+                <input onChange={(e) => setIdToCall(e.target.value)} value={idToCall} />
 
                 {callProps.callAccepted && !callProps.callEnded ? (
-                  <Button
-                    variant="contained"
-                    color="secondary"
-                    onClick={callProps.leaveCall}
-                    className="{classes.margin}"
-                  >
+                  <button color="secondary" onClick={callProps.leaveCall} className="{classes.margin}">
                     Hang Up
-                  </Button>
+                  </button>
                 ) : (
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={() => callProps.callUser!(idToCall)}
-                    className="{classes.margin}"
-                  >
+                  <button color="primary" onClick={() => callProps.callUser!(idToCall)} className="{classes.margin}">
                     <BiPhone />
                     Call
-                  </Button>
+                  </button>
                 )}
-              </Grid>
-            </Grid>
+              </div>
+            </div>
           </form>
 
           <Notifications
@@ -93,8 +80,8 @@ const Sidebar = (callProps: CallProps) => {
             call={callProps.call}
             callAccepted={callProps.callAccepted}
           />
-        </Box>
-      </Box>
+        </div>
+      </div>
     </>
   );
 };

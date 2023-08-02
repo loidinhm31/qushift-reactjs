@@ -1,14 +1,14 @@
 export interface Message {
-  createdAt: string;
-  id: string;
+  id?: string;
   sender: string;
   receiver: string;
   content: string;
   topicId: string;
+  createdAt?: string;
 }
 
 export interface Topic {
-  id: string;
+  id?: string;
   originId?: string;
   isNew: boolean;
   name: string;

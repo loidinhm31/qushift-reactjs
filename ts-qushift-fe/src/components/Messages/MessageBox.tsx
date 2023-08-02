@@ -1,9 +1,7 @@
-import { Box, CircularProgress } from "@chakra-ui/react";
 import React, { useEffect, useRef, useState } from "react";
-import useSWR from "swr";
 
-import { useEventStreamBreakState } from "@/hooks/eventstream/useEventStream";
-import { get } from "@/lib/api";
+import { useUser } from "@/hooks/useUser";
+import { fetchMessagesApi, useStreamMessageApi } from "@/service/messages";
 import { Message } from "@/types/Conversation";
 
 import { MessageLoading } from "./MessageLoading";
@@ -15,6 +13,8 @@ interface MessageProps {
 }
 
 export function MessageBox(messageProps: MessageProps) {
+  const { status, defaultUser: user } = useUser();
+
   const listInnerRef = useRef<HTMLDivElement | null>(null);
   const boxEndRef = useRef<HTMLDivElement | null>(null);
 
@@ -23,30 +23,40 @@ export function MessageBox(messageProps: MessageProps) {
   const [currPage, setCurrPage] = useState<number>(0); // storing current page number
   const [prevPage, setPrevPage] = useState<number>(-1); // storing prev page number
   const [wasLastList, setWasLastList] = useState<boolean>(false); // setting a flag to know the last list
+  const [isLoading, setIsLoading] = useState(true);
 
   // Control event source to work with SSE for the incoming message
-  const incomingMessage = useEventStreamBreakState<Message>(`/api/v1/stream/messages/?topicId=${messageProps.topicId}`);
+  const incomingMessage = useStreamMessageApi(messageProps.topicId, user);
 
-  const { isLoading } = useSWR<Message[]>(`/api/v1/messages/${messageProps.topicId}/?start=${currPage}`, get, {
-    onSuccess: (data) => {
-      if (currPage === 0) {
-        // Get history messages
-        console.log(`Getting history for id ${messageProps.topicId}...`);
-        setMessages(data);
-      } else if (
-        !wasLastList && // Pagination when scroll to top
-        prevPage !== currPage &&
-        currPage !== 0
-      ) {
-        if (!data.length) {
-          setWasLastList(true);
-        } else {
-          console.log(`Updating array for ${messageProps.topicId}, current page is ${currPage}...`);
-          setMessages([...data, ...messages]);
-        }
-      }
-    },
-  });
+  useEffect(() => {
+    if (status !== "loading") {
+      fetchMessagesApi(currPage, messageProps.topicId, user)
+        .then((res) => res.data)
+        .then((data: Message[]) => {
+          if (data) {
+            if (currPage === 0) {
+              // Get history messages
+              console.log(`Getting history for id ${messageProps.topicId}...`);
+              setMessages(data);
+            } else if (
+              !wasLastList && // Pagination when scroll to top
+              prevPage !== currPage &&
+              currPage !== 0
+            ) {
+              if (!data.length) {
+                setWasLastList(true);
+              } else {
+                console.log(`Updating array for ${messageProps.topicId}, current page is ${currPage}...`);
+                setMessages([...data, ...messages]);
+              }
+            }
+          }
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
+    }
+  }, [status, currPage]);
 
   const scrollToBottom = () => {
     boxEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -89,20 +99,17 @@ export function MessageBox(messageProps: MessageProps) {
     <>
       {isLoading && <MessageLoading />}
 
-      <Box
-        width={["100%", "100%", "100px", "xl"]}
+      <div
+        className="overflow-y-auto h-80"
         ref={listInnerRef}
         onScroll={onScrollToTop}
-        overflowY="auto"
-        maxHeight="700px"
         onMouseEnter={() => messageProps.onMouseAction(true)}
         onMouseLeave={() => messageProps.onMouseAction(false)}
-        className="p-4 h-full"
       >
-        {messages ? <MessageTable messages={messages} /> : <CircularProgress isIndeterminate />}
+        {messages ? <MessageTable messages={messages} /> : <div className="animate-spin">Loading...</div>}
 
-        <Box ref={boxEndRef} />
-      </Box>
+        <div ref={boxEndRef} />
+      </div>
     </>
   );
 }
