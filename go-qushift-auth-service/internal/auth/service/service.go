@@ -68,6 +68,10 @@ func (a *authService) SignUp(ctx context.Context, userDto *dto.UserDto) error {
 }
 
 func (a *authService) SignIn(ctx context.Context, username, password string) (string, error) {
+	if username == "" || password == "" {
+		return "", errors.ErrInvalidClient
+	}
+
 	user, _ := a.userRepository.GetUserByUsername(ctx, username)
 	if user == nil {
 		return "", errors.ErrNotFound

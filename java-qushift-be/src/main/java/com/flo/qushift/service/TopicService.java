@@ -1,12 +1,14 @@
 package com.flo.qushift.service;
 
-import com.flo.qushift.document.BaseDocument;
 import com.flo.qushift.document.StreamTopic;
 import com.flo.qushift.document.Topic;
 import com.flo.qushift.dto.TopicDto;
+import com.flo.qushift.model.Member;
 import com.flo.qushift.repository.ReactiveTopicRepository;
 import com.flo.qushift.repository.TopicStreamRepository;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.bson.types.ObjectId;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -16,8 +18,8 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 import java.time.LocalDateTime;
-import java.util.Comparator;
-import java.util.Objects;
+import java.util.HashSet;
+import java.util.List;
 
 @RequiredArgsConstructor
 @Service
@@ -28,9 +30,13 @@ public class TopicService {
     private final TopicStreamRepository topicStreamRepository;
 
     public Mono<StreamTopic> saveTopic(TopicDto topicDto) {
+        if (StringUtils.isBlank(topicDto.getName()) || CollectionUtils.isEmpty(topicDto.getMembers())) {
+            throw new IllegalArgumentException();
+        }
+
         Topic topic = Topic.builder()
                 .name(topicDto.getName())
-                .members(topicDto.getMembers())
+                .members(new HashSet<>(topicDto.getMembers()))
                 .createdAt(LocalDateTime.now())
                 .build();
 
@@ -70,9 +76,9 @@ public class TopicService {
     }
 
     public Mono<Void> changeCheckSeenTopicForMember(String topicId, String userId) {
-        Mono<Topic> messageMono = reactiveTopicRepository.findByIdAndMemberMatchUser(new ObjectId(topicId), userId);
+        Mono<Topic> topicMono = reactiveTopicRepository.findByIdAndMemberMatchUser(new ObjectId(topicId), userId);
 
-        return messageMono
+        return topicMono
                 .publishOn(Schedulers.boundedElastic())
                 .doOnNext(topic -> {
                     topic.getMembers().forEach(member -> {
@@ -81,6 +87,18 @@ public class TopicService {
                             member.setNotSeenCount(0);
                         }
                     });
+
+                    reactiveTopicRepository.save(topic).subscribe();
+                })
+                .then();
+    }
+
+    public Mono<Void> addMembers(String topicId, List<Member> members) {
+        Mono<Topic> topicMono = reactiveTopicRepository.findById(topicId);
+        return topicMono
+                .publishOn(Schedulers.boundedElastic())
+                .doOnNext(topic -> {
+                    topic.getMembers().addAll(members);
 
                     reactiveTopicRepository.save(topic).subscribe();
                 })

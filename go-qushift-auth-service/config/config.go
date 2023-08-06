@@ -49,14 +49,16 @@ func LoadConfig(filename string, envProfile string) (*viper.Viper, error) {
 
 	v.SetConfigName(filename)
 
-	configPath := "/etc/config"
 	if envProfile == "" {
-		configPath = "./config"
+		v.AddConfigPath("./config")
+		v.AddConfigPath("../../config")
+	} else {
+		v.AddConfigPath("/etc/config")
 	}
-	v.AddConfigPath(configPath)
 
 	if err := v.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
+			log.Println(err)
 			return nil, errors.New("config file not found")
 		}
 		return nil, err

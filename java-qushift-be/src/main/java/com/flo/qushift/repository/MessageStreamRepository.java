@@ -1,16 +1,15 @@
 package com.flo.qushift.repository;
 
-import com.flo.qushift.document.Message;
-import com.flo.qushift.document.StreamMessage;
+import java.util.List;
+
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
 import org.springframework.data.mongodb.repository.Tailable;
-import org.springframework.stereotype.Repository;
+
+import com.flo.qushift.document.StreamMessage;
+
 import reactor.core.publisher.Flux;
 
-import java.util.List;
-
-@Repository
 public interface MessageStreamRepository extends ReactiveMongoRepository<StreamMessage, String> {
     @Tailable
     Flux<StreamMessage> findByTopicIdIn(List<String> values);
