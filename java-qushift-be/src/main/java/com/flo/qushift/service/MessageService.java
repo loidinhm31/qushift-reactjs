@@ -1,26 +1,31 @@
 package com.flo.qushift.service;
 
-import com.flo.qushift.document.*;
+import java.time.LocalDateTime;
+import java.util.Comparator;
+import java.util.Objects;
+import java.util.Optional;
+
+import org.bson.types.ObjectId;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+
+import com.flo.qushift.document.BaseDocument;
+import com.flo.qushift.document.Message;
+import com.flo.qushift.document.StreamMessage;
+import com.flo.qushift.document.StreamTopic;
+import com.flo.qushift.document.Topic;
 import com.flo.qushift.dto.MessageDto;
 import com.flo.qushift.model.Member;
 import com.flo.qushift.repository.MessageStreamRepository;
 import com.flo.qushift.repository.ReactiveMessageRepository;
 import com.flo.qushift.repository.ReactiveTopicRepository;
 import com.flo.qushift.repository.TopicStreamRepository;
+
 import lombok.RequiredArgsConstructor;
-import org.bson.types.ObjectId;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
-
-import java.time.LocalDateTime;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service

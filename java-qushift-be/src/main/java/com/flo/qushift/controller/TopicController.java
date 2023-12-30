@@ -2,6 +2,7 @@ package com.flo.qushift.controller;
 
 import java.util.List;
 
+import com.flo.qushift.model.Member;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -60,6 +61,12 @@ public class TopicController {
     @PutMapping("/signal/{topicId}")
     public Mono<ResponseEntity<HttpStatus>> sendSignalForSeen(@PathVariable String topicId, @RequestParam String userId) {
         return topicService.changeCheckSeenTopicForMember(topicId, userId)
-                .map(s -> ResponseEntity.ok(HttpStatus.ACCEPTED));
+                .then(Mono.fromCallable(() -> ResponseEntity.ok(HttpStatus.ACCEPTED)));
+    }
+
+    @PostMapping("/{topicId}/members")
+    public Mono<ResponseEntity<HttpStatus>> addMembers(@PathVariable String topicId, @RequestBody List<Member> members) {
+        return topicService.addMembers(topicId, members)
+                .then(Mono.fromCallable(() -> ResponseEntity.ok(HttpStatus.ACCEPTED)));
     }
 }

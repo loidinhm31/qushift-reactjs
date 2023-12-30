@@ -1,21 +1,27 @@
-import { Button, Flex } from "@chakra-ui/react";
-import Link from "next/link";
-import { useSession } from "next-auth/react";
+import { boolean } from "boolean";
+import { Block, Button, Link } from "konsta/react";
+import { useRouter } from "next/navigation";
 import React from "react";
-import { FaUser } from "react-icons/fa";
+import { TbUser } from "react-icons/tb";
+import { useAppSelector } from "@/hooks/redux";
+import { useUser } from "@/hooks/useUser";
 
 export default function AccountButton() {
-  const { data: session } = useSession();
+  const { defaultUser } = useUser();
+  const auth = useAppSelector((state) => state.authReducer);
+
+  const router = useRouter();
 
   return (
     <div>
-      {!session && (
-        <Link href="/signin" aria-label="Home">
-          <Flex alignItems="center">
-            <Button variant="outline" leftIcon={<FaUser />}>
-              Sign in
+      {boolean(defaultUser.id === undefined && !auth.isAuthenticate) && (
+        <Link onClick={() => router.push("/signin")} aria-label="Home">
+          <Block className="flex items-center">
+            <Button className="border border-gray-600 text-gray-600 px-4 py-2 flex items-center space-x-2">
+              <TbUser className="w-4 h-4" />
+              <p className="p-1">Sign in</p>
             </Button>
-          </Flex>
+          </Block>
         </Link>
       )}
     </div>

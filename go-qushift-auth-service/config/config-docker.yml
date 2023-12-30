@@ -19,6 +19,6 @@ postgres:
   PostgresqlPort: 5432
   PostgresqlUser: postgres
   PostgresqlPassword: postgrespw
-  PostgresqlDbname: auth
+  PostgresqlDbname: users
   PostgresqlSslmode: false
   PgDriver: pgx

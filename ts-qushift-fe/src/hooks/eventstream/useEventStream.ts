@@ -1,16 +1,22 @@
+import EventSource from "eventsource";
 import { useEffect, useState } from "react";
 
+import { DefaultUser } from "@/types/DefaultUser";
 
-export const useEventStream = <Type>(endpoint: string): Type | undefined => {
+export const useEventStream = <Type>(endpoint: string, user: DefaultUser | null): Type | undefined => {
   const [value, setValue] = useState<Type>();
 
   useEffect(() => {
     console.log(`Opening stream for endpoint keep state ${endpoint}...`);
 
-    const eventSource = new EventSource(endpoint);
+    const eventSource = new EventSource(endpoint, {
+      headers: {
+        Authorization: `Bearer ${user?.accessToken}`,
+      },
+    });
 
-    eventSource.onopen = (event: Event) => {
-      console.log("open", event);
+    eventSource.onopen = (_: Event) => {
+      console.log("Open connection");
     };
 
     eventSource.onmessage = (event: MessageEvent) => {
@@ -34,16 +40,20 @@ export const useEventStream = <Type>(endpoint: string): Type | undefined => {
   return value;
 };
 
-export const useEventStreamBreakState = <Type>(endpoint: string): Type | undefined => {
+export const useEventStreamBreakState = <Type>(endpoint: string, user: DefaultUser | null): Type | undefined => {
   const [value, setValue] = useState<Type>();
 
   useEffect(() => {
     console.log(`Opening stream for endpoint ${endpoint}...`);
 
-    const eventSource = new EventSource(endpoint);
+    const eventSource = new EventSource(endpoint, {
+      headers: {
+        Authorization: `Bearer ${user?.accessToken}`,
+      },
+    });
 
-    eventSource.onopen = (event: Event) => {
-      console.log("open", event);
+    eventSource.onopen = (_: Event) => {
+      console.log("Open connection");
     };
 
     eventSource.onmessage = (event: MessageEvent) => {

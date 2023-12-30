@@ -1,4 +1,3 @@
-import { Button } from "@chakra-ui/react";
 import React from "react";
 
 import { CallProps } from "@/types/Video";
@@ -9,9 +8,9 @@ const Notifications = ({ answerCall, call, callAccepted }: CallProps) => {
       {call?.isReceivingCall && !callAccepted && (
         <div style={{ display: "flex", justifyContent: "space-around" }}>
           <h1>{call.name} is calling:</h1>
-          <Button color="primary" onClick={answerCall}>
+          <button color="primary" onClick={answerCall}>
             Answer
-          </Button>
+          </button>
         </div>
       )}
     </>
