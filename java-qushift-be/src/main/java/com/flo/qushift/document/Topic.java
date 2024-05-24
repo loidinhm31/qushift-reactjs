@@ -8,7 +8,7 @@ import lombok.experimental.SuperBuilder;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.List;
+import java.util.Set;
 
 @SuperBuilder
 @Data
@@ -21,6 +21,6 @@ public class Topic extends BaseDocument {
 
     private String name;
 
-    private List<Member> members;
+    private Set<Member> members;
 
 }

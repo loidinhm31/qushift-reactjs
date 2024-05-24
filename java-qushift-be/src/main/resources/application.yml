@@ -6,6 +6,8 @@ spring:
     name: qushift
   profiles:
     active: local
+  webflux:
+    base-path: /api
 
 logging:
   level:

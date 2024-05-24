@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.oauth2.server.resource.introspection.ReactiveOpaqueTokenIntrospector;
@@ -31,20 +32,14 @@ public class SecurityConfig {
 
     @Bean
     public SecurityWebFilterChain springSecurityFilterChain(final ServerHttpSecurity http) {
-        http
-                .cors().and().csrf()
-                .disable();
-
-        http.authorizeExchange()
-                // Swagger
-                .pathMatchers("/swagger-ui.html").permitAll()
-                // Health check
-                .pathMatchers(HttpMethod.GET, "/actuator/**").permitAll()
-                .and()
-
-                .authorizeExchange().anyExchange().permitAll()
-
-        ;
+		http.csrf(ServerHttpSecurity.CsrfSpec::disable);
+        http.authorizeExchange(exchanges -> {
+            // Swagger
+            exchanges.pathMatchers("/swagger-ui.html").permitAll();
+            // Health check
+            exchanges.pathMatchers(HttpMethod.GET, "/actuator/**").permitAll();
+            exchanges.anyExchange().permitAll();
+        });
         return http.build();
     }
 

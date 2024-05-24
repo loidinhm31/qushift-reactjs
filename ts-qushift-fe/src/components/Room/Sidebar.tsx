@@ -22,7 +22,7 @@ const Sidebar = (callProps: CallProps) => {
 
     const switchAudioStatus = () => {
         callProps.setReplaceStream(true);
-        
+
         if (callProps.audioStatus) {
             callProps.stream.getAudioTracks()[0].stop();
             callProps.setAudioStatus(false);

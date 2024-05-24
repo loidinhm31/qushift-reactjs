@@ -1,52 +1,48 @@
-import { Box, Button, List, ListItem, Text } from "@chakra-ui/react";
+import { Chip, List, ListItem } from "konsta/react";
 import React from "react";
-import { Topic } from "../../types/Conversation";
-import { useSession } from "next-auth/react";
-import { CreatableMembersElement } from "./CreatableMembersElement";
+import { TbUserCircle } from "react-icons/tb";
+
+import { CreatableMembersElement } from "@/components/Topic/CreatableMembersElement";
+import { Topic } from "@/types/Conversation";
 
 interface TopicMemberProps {
-	currTopic: Topic;
+  currTopic: Topic;
+  mutateTopic: (flag: boolean) => void;
 }
 
-export function TopicMember({ currTopic }: TopicMemberProps) {
-	const { data: session } = useSession();
+export function TopicMember({ currTopic, mutateTopic }: TopicMemberProps) {
+  return (
+    <div className="w-60">
+      <div className="flex justify-center font-bold text-lg">Members</div>
 
-	if (!session) {
-		return;
-	}
+      <div className="overflow-y-auto h-48">
+        <List outline className="my-0 w-full">
+          {currTopic.members &&
+            currTopic.members.map((item) => (
+              <ListItem
+                key={`${item.userId}`}
+                media={
+                  <>
+                    <div>
+                      <Chip
+                        media={
+                          <>
+                            <TbUserCircle className="w-6 h-6" />
+                          </>
+                        }
+                      ></Chip>
+                      <span className="p-2 font-normal">{item.username}</span>
+                    </div>
+                  </>
+                }
+              ></ListItem>
+            ))}
+        </List>
+      </div>
 
-	return (
-		<Box overflowY="auto"
-			 maxHeight="700px"
-			 className="overflow-y-auto p-3 w-full">
-
-			<Box p="3" fontSize="lg" as="b">Members</Box>
-			<List className="grid grid-cols-3 col-span-3 sm:flex sm:flex-col gap-2">
-				{currTopic.members && currTopic.members.map((item) => (
-					<ListItem
-						key={`${item.userId}`}
-						style={{ textDecoration: "none" }}>
-
-						<Button
-							justifyContent={["center", "center", "center", "left"]}
-							gap="5"
-							size="lg"
-							width="full"
-						>
-							<Text
-								fontWeight="normal"
-								className="hidden lg:block"
-							>
-								{item.username}
-							</Text>
-						</Button>
-					</ListItem>
-				))}
-
-				<CreatableMembersElement />
-
-			</List>
-		</Box>
-
-	);
+      <div className="flex justify-center p-1">
+        <CreatableMembersElement topicId={currTopic.id!} mutateTopic={mutateTopic} />
+      </div>
+    </div>
+  );
 }

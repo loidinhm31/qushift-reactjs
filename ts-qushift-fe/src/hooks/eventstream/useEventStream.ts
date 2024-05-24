@@ -1,72 +1,78 @@
+import EventSource from "eventsource";
 import { useEffect, useState } from "react";
 
-export const useEventStream = <Type extends any>(endpoint: string): Type => {
-	const [value, setValue] = useState<Type>();
+import { DefaultUser } from "@/types/DefaultUser";
 
-	useEffect(() => {
-		console.log(`Opening stream for endpoint keep state ${endpoint}...`);
+export const useEventStream = <Type>(endpoint: string, user: DefaultUser | null): Type | undefined => {
+  const [value, setValue] = useState<Type>();
 
-		const eventSource = new EventSource(endpoint);
+  useEffect(() => {
+    console.log(`Opening stream for endpoint keep state ${endpoint}...`);
 
-		eventSource.onopen = (event: any) => {
-			console.log("open", event);
-		};
+    const eventSource = new EventSource(endpoint, {
+      headers: {
+        Authorization: `Bearer ${user?.accessToken}`,
+      },
+    });
 
-		eventSource.onmessage = (event: any) => {
-			const obj = JSON.parse(event.data);
-			setValue(obj);
-		};
+    eventSource.onopen = (_: Event) => {
+      console.log("Open connection");
+    };
 
-		eventSource.onerror = (event: any) => {
-			console.error(
-				`Event source has failed for reason: ${JSON.stringify(event)}`
-			);
-			if (event.readyState === EventSource.CLOSED) {
-				eventSource.close();
-			}
-		};
+    eventSource.onmessage = (event: MessageEvent) => {
+      const obj = JSON.parse(event.data);
+      setValue(obj);
+    };
 
-		return () => {
-			console.log(`Closing stream for endpoint ${endpoint}...`);
-			eventSource.close();
-		};
-	}, []);
+    eventSource.onerror = (event: Event) => {
+      console.error("Event source has failed");
+      if ((event as unknown as EventSource).readyState === EventSource.CLOSED) {
+        (eventSource as EventSource).close();
+      }
+    };
 
-	return value;
+    return () => {
+      console.log(`Closing stream for endpoint ${endpoint}...`);
+      eventSource.close();
+    };
+  }, []);
+
+  return value;
 };
 
-export const useEventStreamBreakState = <Type extends any>(endpoint: string): Type => {
-	const [value, setValue] = useState<Type>();
+export const useEventStreamBreakState = <Type>(endpoint: string, user: DefaultUser | null): Type | undefined => {
+  const [value, setValue] = useState<Type>();
 
-	useEffect(() => {
-		console.log(`Opening stream for endpoint ${endpoint}...`);
+  useEffect(() => {
+    console.log(`Opening stream for endpoint ${endpoint}...`);
 
-		const eventSource = new EventSource(endpoint);
+    const eventSource = new EventSource(endpoint, {
+      headers: {
+        Authorization: `Bearer ${user?.accessToken}`,
+      },
+    });
 
-		eventSource.onopen = (event: any) => {
-			console.log("open", event);
-		};
+    eventSource.onopen = (_: Event) => {
+      console.log("Open connection");
+    };
 
-		eventSource.onmessage = (event: any) => {
-			const obj = JSON.parse(event.data);
-			setValue(obj);
-		};
+    eventSource.onmessage = (event: MessageEvent) => {
+      const obj = JSON.parse(event.data);
+      setValue(obj);
+    };
 
-		eventSource.onerror = (event: any) => {
-			console.error(
-				`Event source has failed for reason: ${JSON.stringify(event)}`
-			);
-			if (event.readyState === EventSource.CLOSED) {
-				eventSource.close();
-			}
-		};
+    eventSource.onerror = (event: Event) => {
+      console.error("Event source has failed");
+      if ((event as unknown as EventSource).readyState === EventSource.CLOSED) {
+        (eventSource as EventSource).close();
+      }
+    };
 
-		return () => {
-			console.log(`Closing stream for endpoint ${endpoint}...`);
-			eventSource.close();
-		};
+    return () => {
+      console.log(`Closing stream for endpoint ${endpoint}...`);
+      eventSource.close();
+    };
+  }, [endpoint]);
 
-	}, [endpoint]);
-
-	return value;
+  return value;
 };

@@ -6,7 +6,7 @@ services:
         ports:
             - "27017:27017"
         environment:
-            MONGO_INITDB_DATABASE: webservice
+            MONGO_INITDB_DATABASE: qushift
             MONGO_INITDB_ROOT_USERNAME: mongodb
             MONGO_INITDB_ROOT_PASSWORD: mongodbpw
         volumes:
@@ -51,12 +51,14 @@ services:
         deploy:
             mode: replicated
             replicas: 1
+        depends_on:
+            - mongo
+            - postgres
 #
 #    nextjs-qushift-frontend:
 #        build:
 #            context: ./../ts-qushift-fe
 #            dockerfile: ./../project/docker/Dockerfile.nextjs-frontend
-#        restart: always
 #        ports:
 #            - "4000:4000"
 #        environment:

@@ -1,73 +1,65 @@
+import { Block, Button } from "konsta/react";
 import React, { Dispatch } from "react";
-import { post } from "../../lib/api";
-import { Input } from "@chakra-ui/input";
-import { FiSend } from "react-icons/fi";
-import { Box, HStack } from "@chakra-ui/react";
-import useSWRMutation from "swr/mutation";
-import { useSession } from "next-auth/react";
+import { TbSend } from "react-icons/tb";
+
+import { Action } from "@/hooks/message/useMessageReducer";
+import { useUser } from "@/hooks/useUser";
+import { makeMessageApi } from "@/service/messages";
+import { Message } from "@/types/Conversation";
 
 interface TopicProps {
-    currTopicId: string;
-    message: string;
-    dispatch: Dispatch<any>;
+  currTopicId: string;
+  message: string;
+  dispatch: Dispatch<Action>;
 }
 
 export function InputBox({ currTopicId, message, dispatch }: TopicProps) {
-    const { data: session } = useSession();
+  const { defaultUser: user } = useUser();
 
-    const { trigger } = useSWRMutation("/api/messages/send_message", post);
+  const handleSubmit = () => {
+    if (message.trim().length !== 0) {
+      const data: Message = {
+        content: message,
+        receiver: "test-b", // TODO
+        sender: user!.id!,
+        topicId: currTopicId,
+      };
 
-    const handleSubmit = () => {
-        if (message.trim().length !== 0) {
-            const data = {
-                content: message,
-                receiver: "test-b", // TODO
-                sender: session.user.id,
-                topicId: currTopicId
-            }
-            trigger(data)
-                .finally(() => {
-                    // Finally, clear input
-                    dispatch({
-                        type: "sent_message"
-                    });
-                });
-        }
-    };
+      makeMessageApi(data, user).finally(() => {
+        // Finally, clear input
+        dispatch({
+          type: "sent_message",
+        });
+      });
+    }
+  };
 
-    const handleEnterSubmit = (event: any) => {
-        if (event.key === "Enter") {
-            handleSubmit();
-        }
-    };
+  const handleEnterSubmit = (event) => {
+    if (event.key === "Enter") {
+      handleSubmit();
+    }
+  };
 
-    return (
-        <HStack w={["full", "full", "full", "fit-content"]} gap={2}
-                className="p-4">
-            <Box
-                _hover={{ cursor: "pointer", opacity: 0.9 }}>
-                    <span className="input-group-text py-3"
-                          onClick={handleSubmit}>
-                            <FiSend />
-                    </span>
-            </Box>
-
-            <Input
-                width={["full", "full", "full", "xl"]}
-                p="4"
-                borderRadius="md"
-                type="input"
-                className="form-control"
-                name="msg"
-                value={message}
-                onChange={(event: any) => {
-                    dispatch({
-                        type: "edited_message",
-                        message: event.target.value
-                    });
-                }}
-                onKeyDown={(event: any) => handleEnterSubmit(event)}
-            />
-        </HStack>
-    );
+  return (
+    <Block className="flex ">
+      <textarea
+        rows={4}
+        className="block w-full text-sm dark:bg-gray-700 dark:border-gray-600 rounded-md dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+        name="msg"
+        value={message}
+        onChange={(event) => {
+          dispatch({
+            type: "edited_message",
+            message: event.target.value,
+          });
+        }}
+        onKeyDown={(event) => handleEnterSubmit(event)}
+      />
+      <Block className="cursor-pointer opacity-90 hover:opacity-90">
+        <Button className="input-group-text py-3" onClick={handleSubmit}>
+          <TbSend />
+        </Button>
+      </Block>
+    </Block>
+  );
 }

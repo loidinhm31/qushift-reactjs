@@ -2,6 +2,7 @@ package com.flo.qushift.controller;
 
 import java.util.List;
 
+import com.flo.qushift.model.Member;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -25,7 +26,7 @@ import reactor.core.publisher.Mono;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/topics")
+@RequestMapping("/v1/topics")
 public class TopicController {
 
     private final TopicService topicService;
@@ -52,14 +53,20 @@ public class TopicController {
                 .map(ResponseEntity::ok);
     }
 
-    @GetMapping(value = "/stream/{receiverId}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public Flux<StreamTopic> retrieveMessagesForReceiver(@PathVariable String receiverId) {
+    @GetMapping(value = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<StreamTopic> retrieveMessagesForReceiver(@RequestParam String receiverId) {
         return topicService.getStreamMessagesByReceiver(receiverId);
     }
 
     @PutMapping("/signal/{topicId}")
     public Mono<ResponseEntity<HttpStatus>> sendSignalForSeen(@PathVariable String topicId, @RequestParam String userId) {
         return topicService.changeCheckSeenTopicForMember(topicId, userId)
-                .map(s -> ResponseEntity.ok(HttpStatus.ACCEPTED));
+                .then(Mono.fromCallable(() -> ResponseEntity.ok(HttpStatus.ACCEPTED)));
+    }
+
+    @PostMapping("/{topicId}/members")
+    public Mono<ResponseEntity<HttpStatus>> addMembers(@PathVariable String topicId, @RequestBody List<Member> members) {
+        return topicService.addMembers(topicId, members)
+                .then(Mono.fromCallable(() -> ResponseEntity.ok(HttpStatus.ACCEPTED)));
     }
 }

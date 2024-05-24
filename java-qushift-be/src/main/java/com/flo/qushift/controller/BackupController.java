@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/backup")
+@RequestMapping("/v1/backup")
 public class BackupController {
 
     private final BackupService backupService;

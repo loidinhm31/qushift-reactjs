@@ -1,23 +1,37 @@
-import { Box, useColorMode } from "@chakra-ui/react";
-import { MenuButtonOption, SideMenu } from "src/components/SideMenu";
-import { colors } from "../styles/Theme/colors";
+import { Link, Navbar, Page, Panel } from "konsta/react";
+import React, { useState } from "react";
+
+import { Header } from "@/components/Header";
+import { MenuButtonOption, SideMenu } from "@/components/SideMenu";
 
 interface SideMenuLayoutProps {
-	menuButtonOptions: MenuButtonOption[];
-	children: React.ReactNode;
+  menuButtonOptions: MenuButtonOption[];
+  children: React.ReactNode;
 }
 
 export const SideMenuLayout = (props: SideMenuLayoutProps) => {
-	const { colorMode } = useColorMode();
+  const [leftPanelOpened, setLeftPanelOpened] = useState(false);
 
-	return (
-		<Box backgroundColor={colorMode === "light" ? colors.light.bg : colors.dark.bg} className="sm:overflow-hidden">
-			<Box display="flex" flexDirection={["column", "row"]} h="full" gap={["0", "0", "0", "6"]}>
-				<Box p={["3", "3", "3", "6"]} pr={["3", "3", "3", "0"]}>
-					<SideMenu buttonOptions={props.menuButtonOptions} />
-				</Box>
-				<Box>{props.children}</Box>
-			</Box>
-		</Box>
-	);
+  return (
+    <Page>
+      <Header setLeftPanelOpened={setLeftPanelOpened} />
+      <Panel side="left" opened={leftPanelOpened} onBackdropClick={() => setLeftPanelOpened(false)}>
+        <Page>
+          <Navbar
+            title="QuShift"
+            right={
+              <Link navbar onClick={() => setLeftPanelOpened(false)}>
+                Close
+              </Link>
+            }
+          />
+          <div className="space-y-4">
+            <SideMenu buttonOptions={props.menuButtonOptions} />
+          </div>
+        </Page>
+      </Panel>
+
+      <div>{props.children}</div>
+    </Page>
+  );
 };

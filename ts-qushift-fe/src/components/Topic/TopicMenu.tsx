@@ -1,159 +1,196 @@
-import { Badge, Box, Button, CircularProgress, List, ListItem } from "@chakra-ui/react";
+import { boolean } from "boolean";
+import { Block, Icon, Link, MenuList, MenuListItem, Preloader } from "konsta/react";
+import { usePathname, useRouter } from "next/navigation";
 import React, { Dispatch, useCallback, useEffect, useState } from "react";
-import { useRouter } from "next/router";
-import { get, post } from "../../lib/api";
-import { Member, Topic } from "../../types/Conversation";
-import useSWRMutation from "swr/mutation";
-import { useSession } from "next-auth/react";
+
+import { Action } from "@/hooks/message/useMessageReducer";
+import { useUser } from "@/hooks/useUser";
+import { getTopicsApi, useStreamTopicApi } from "@/service/messages";
+import { Member, Topic } from "@/types/Conversation";
+
 import { CreatableTopicElement } from "./CreatableTopicElement";
-import { useEventStream } from "../../hooks/eventstream/useEventStream";
-import useSWR from "swr";
+import { TbLayoutSidebarLeftCollapse, TbLayoutSidebarRightCollapse } from "react-icons/tb";
 
 interface TopicProps {
-	currTopicId?: string;
-	sendSignal: boolean;
-	dispatch?: Dispatch<any>;
+  currTopicId?: string;
+  sendSignal: boolean;
+  dispatch?: Dispatch<Action>;
 }
 
-export function TopicMenu({ currTopicId, sendSignal, dispatch }: TopicProps) {
-	const router = useRouter();
+export function TopicMenu({ currTopicId, sendSignal: wasSentSignal, dispatch }: TopicProps) {
+  const router = useRouter();
+  const pathname = usePathname();
 
-	const { data: session } = useSession();
+  const { status, defaultUser: user } = useUser();
 
-	const [topics, setTopics] = useState<Topic[]>();
+  const [isHideTopic, setIsHideTopic] = useState(false);
 
-	const [msgMap, setMsgMap] = useState<Map<string, string>>(new Map());
+  const [isLoading, setIsLoading] = useState(true);
+  const [isMutate, setIsMutate] = useState(false);
+  const [topics, setTopics] = useState<Topic[]>();
 
-	// Get all topics
-	const { data, isLoading, isValidating, mutate } = useSWR(`../api/topics/page/?start=0`, get, {
-		onSuccess: (data) => {
-			setTopics(data);
-		}
-	});
+  const [msgMap, setMsgMap] = useState<Map<string, string>>(new Map());
 
-	// Reload invalidate data
-	useEffect(() => {
-		if (!isValidating) {
-			setTopics(data);
-		}
-	}, [router.asPath]);
+  // Control event source to work with SSE for incoming notify
+  const incomingTopic = useStreamTopicApi(user);
 
-	const { trigger } = useSWRMutation("/api/messages/send_signal", post);
+  // Get all topics
+  useEffect(() => {
+    if (status !== "loading") {
+      setIsLoading(true);
 
-	const goToTopic = useCallback((topicId: string) => {
-		if (dispatch) {
-			dispatch({
-				type: "changed_selection",
-				topicId: topicId
-			});
-		}
+      getTopicsApi(user)
+        .then((res) => res.data)
+        .then((data) => {
+          if (data) {
+            setTopics(data);
+          }
+        })
+        .finally(() => setIsLoading(false));
+    }
+  }, [pathname, status]);
 
-		router.push(`/messages/${topicId}`);
-	}, [router]);
+  useEffect(() => {
+    if (isMutate) {
+      setIsLoading(true);
 
-	// Control event source to work with SSE for incoming notify
-	const topic = useEventStream<Topic>(
-		`../api/stream/topics`
-	);
+      getTopicsApi(user)
+        .then((res) => res.data)
+        .then((data) => {
+          if (data) {
+            setTopics(data);
+          }
+        })
+        .finally(() => {
+          setIsLoading(false);
+          setIsMutate(false);
+        });
+    }
+  }, [isMutate]);
 
-	// Listening the incoming notify
-	useEffect(() => {
-		if (topic) {
-			if (topics && topic.isNew) {
-				if (!topics.some((t) => t.id === topic.originId)) {
-					console.log(`Adding new topic ${topic.originId}`);
-					setTopics([topic, ...topics]);
-					// Force mutate data
-					mutate(data);
-				}
-			} else if (!topic.isNew) {
-				console.log(`Updating notification for receiver on topic ${topic.originId}...`);
-				const user = topic.members?.find(member => member.userId === session.user.id) as Member;
+  const goToTopic = useCallback(
+    (topicId: string) => {
+      if (dispatch) {
+        dispatch({
+          type: "changed_selection",
+          topicId: topicId
+        });
+      }
 
-				if (!user.checkSeen) {
-					if (msgMap.has(topic.originId)) {
-						const countSeen = user.notSeenCount;
-						if (countSeen > 99) {
-							msgMap.set(topic.originId, "99+");
-						} else {
-							msgMap.set(topic.originId, countSeen.toString());
-						}
-					} else {
-						msgMap.set(topic.originId, user.notSeenCount.toString());
-					}
-				} else {
-					msgMap.set(topic.originId, "0");
-				}
-				setMsgMap(new Map(msgMap));
-			}
-		}
-	}, [topic, currTopicId]);
+      router.push(`/messages/${topicId}`);
+    },
+    [dispatch, router]
+  );
 
-	// Send seen signal to server
-	useEffect(() => {
-		if (sendSignal) {
-			if (msgMap.get(currTopicId) !== "0" &&
-				msgMap.get(currTopicId) !== undefined) {
+  // Listening the incoming notify
+  useEffect(() => {
+    if (incomingTopic) {
+      if (topics && incomingTopic.isNew) {
+        if (!topics.some((t) => t.id === incomingTopic.originId)) {
+          console.log(`Adding new topic ${incomingTopic.originId}`);
+          setTopics([incomingTopic, ...topics]);
 
-				console.log(`Sending signal for ${currTopicId}...`);
+          // Force mutate data
+          setIsMutate(true);
+        }
+      } else if (!incomingTopic.isNew) {
+        console.log(`Updating notification for receiver on topic ${incomingTopic.originId}...`);
+        const userMember = incomingTopic.members?.find((member: Member) => member.userId === user?.id);
 
-				trigger({ currTopicId })
-					.finally(() => {
-						msgMap.set(currTopicId as string, "0");
-					});
-			}
-		}
-	}, [sendSignal])
+        if (userMember && !userMember.checkSeen) {
+          if (msgMap.has(incomingTopic.originId!)) {
+            const countSeen = userMember?.notSeenCount;
+            if (countSeen! > 99) {
+              msgMap.set(incomingTopic.originId!, "99+");
+            } else {
+              msgMap.set(incomingTopic.originId!, countSeen!.toString());
+            }
+          } else {
+            msgMap.set(incomingTopic.originId!, userMember.notSeenCount!.toString());
+          }
+        } else {
+          msgMap.set(incomingTopic.originId!, "0");
+        }
+        setMsgMap(new Map(msgMap));
+      }
+    }
+  }, [incomingTopic, currTopicId]);
 
-	if (!session) {
-		return;
-	}
+  // Send seen signal to server
+  useEffect(() => {
+    if (wasSentSignal) {
+      if (msgMap.get(currTopicId!) !== "0" && msgMap.get(currTopicId!) !== undefined) {
+        console.log(`Sending signal for ${currTopicId}...`);
 
-	return (
-		<Box>
-			<CreatableTopicElement>
-				<Box />
-			</CreatableTopicElement>
-			<Box overflowY="auto"
-				 maxHeight="700px"
-				 className="overflow-y-auto p-3 w-full">
+        // sendSignal({ currTopicId }).finally(() => {
+        //   msgMap.set(currTopicId as string, "0");
+        // });
+      }
+    }
+  }, [wasSentSignal]);
 
-				{isLoading && <CircularProgress isIndeterminate />}
+  return (
+    <>
+      {isHideTopic ? (
+        <div className="my-4 py-4">
+          <Link
+            navbar
+            iconOnly
+            className="flex items-center justify-center p-1 rounded-full"
+            onClick={() => setIsHideTopic(!isHideTopic)}
+          >
+            <Icon
+              ios={<TbLayoutSidebarRightCollapse className="w-7 h-7" />}
+              material={<TbLayoutSidebarRightCollapse className="w-6 h-6" />} />
+          </Link>
+        </div>
 
-				<List className="grid grid-cols-3 col-span-3 sm:flex sm:flex-col gap-2">
-					{topics && topics.map((item, index) => (
+      ) : (
+        <div className="w-80 lt-md:w-32">
+          {isLoading && <Preloader />}
 
-						<ListItem
-							onClick={() => goToTopic(item.id)}
-							key={`${item.id}-${index}`}
-							style={{ textDecoration: "none" }}>
+          <Block className="flex flex-row lt-md:flex-col items-center gt-md:space-between">
+            <div className="flex items-center gt-md:w-full">
+              <div>
+                <p>Topics</p>
+              </div>
+              <div>
+                <Link
+                  navbar
+                  iconOnly
+                  className="flex items-center justify-center p-1 rounded-full"
+                  onClick={() => setIsHideTopic(!isHideTopic)}
+                >
+                  <Icon
+                    ios={<TbLayoutSidebarLeftCollapse className="w-7 h-7" />}
+                    material={<TbLayoutSidebarLeftCollapse className="w-6 h-6" />} />
+                </Link>
+              </div>
+            </div>
+            <div>
+              <CreatableTopicElement />
+            </div>
 
-							<Button
-								justifyContent={["center", "center", "center", "left"]}
-								gap="3"
-								size="lg"
-								width="xs"
-								bg={currTopicId === item.id ? "blue.500" : null}
-								_hover={currTopicId === item.id ? { bg: "blue.600" } : null}
-							>
-								<Box
-									noOfLines={1}
-									fontWeight="normal"
-									color={currTopicId === item.id ? "white" : null}
-									className="hidden lg:block"
-								>
-									{item.name}
-									{msgMap.get(item.id) !== "0" &&
-                                        <Badge ml="1" fontSize="0.9em" colorScheme="red">
-											{msgMap.get(item.id)}
-                                        </Badge>
-									}
-								</Box>
-							</Button>
-						</ListItem>
-					))}
-				</List>
-			</Box>
-		</Box>
-	)
+          </Block>
+          <MenuList className="overflow-y-auto h-96">
+            {topics &&
+              topics.map((item, index) => (
+                <MenuListItem
+                  key={`${item.id}-${index}`}
+                  title={item.name}
+                  active={currTopicId === item.id}
+                  onClick={() => goToTopic(item.id!)}
+                  media={
+                    boolean(msgMap.get(item.id!) !== "0") && (
+                      <Icon badge={msgMap.get(item.id!)} badgeColors={{ bg: "bg-red-500" }} />
+                    )
+                  }
+                  className="whitespace-pre"
+                />
+              ))}
+          </MenuList>
+        </div>)
+      }
+    </>
+  );
 }

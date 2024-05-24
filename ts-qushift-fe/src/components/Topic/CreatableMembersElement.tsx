@@ -1,176 +1,126 @@
-import {
-	Box,
-	Button,
-	ButtonGroup,
-	Checkbox,
-	Flex,
-	List,
-	ListItem,
-	Modal,
-	ModalBody,
-	ModalCloseButton,
-	ModalContent,
-	ModalOverlay,
-	Stack,
-	useColorModeValue,
-	useDisclosure
-} from "@chakra-ui/react";
-import React, { useState } from "react";
-import { post } from "src/lib/api";
-import { colors } from "src/styles/Theme/colors";
-import useSWRMutation from "swr/mutation";
-import { RiUserAddLine } from "react-icons/ri";
+import { Button, Icon, Link, List, ListItem } from "konsta/react";
+import React, { useEffect, useState } from "react";
+import { TbUserPlus } from "react-icons/tb";
 
+import { useAppDispatch } from "@/hooks/redux";
+import { useUser } from "@/hooks/useUser";
+import { resetDialog, setDialog } from "@/redux/feature/dialogSlice";
+import { addMembersApi } from "@/service/messages";
+import { Member } from "@/types/Conversation";
 
-interface UserValue {
-	checked: boolean;
-	value: string;
+interface CreatableMembersProps {
+  topicId: string;
+  mutateTopic: (flag: boolean) => void;
 }
 
-interface FlagCreationState {
-	user_values: UserValue[];
-	submittable: boolean;
-}
+export const CreatableMembersElement = ({ topicId, mutateTopic }: CreatableMembersProps) => {
+  const dispatch = useAppDispatch();
 
-export const CreatableMembersElement = () => {
-	const firstFieldRef = React.useRef(null);
-	const { onOpen, onClose, isOpen } = useDisclosure();
+  const openDialog = () => {
+    dispatch(
+      setDialog({
+        isOpen: true,
+        title: "Add Member",
+        dialogNode: <SubmitForm topicId={topicId} mutateTopic={mutateTopic} />,
+      }),
+    );
+  };
 
-	return (
-
-		<>
-			<Button
-				onClick={onOpen}
-				justifyContent={["center", "center", "center", "left"]}
-				gap="3"
-				width="full"
-			>
-				<RiUserAddLine size="25" className="text-black-400" />
-				<Box>Add</Box>
-			</Button>
-
-			<Modal
-				isOpen={isOpen}
-				onClose={onClose}
-				initialFocusRef={firstFieldRef}
-			>
-				<ModalOverlay />
-
-				<ModalContent>
-					<Box className="relative h-4">
-						<ModalCloseButton />
-					</Box>
-
-					<ModalBody width="auto" p="3" m="4" maxWidth="calc(100vw - 2rem)">
-						<SubmitForm firstFieldRef={firstFieldRef} onClose={onClose} />
-
-					</ModalBody>
-				</ModalContent>
-			</Modal>
-		</>
-	);
+  return (
+    <>
+      <Link
+        navbar
+        iconOnly
+        className="flex items-center justify-center p-1 rounded-full bg-gray-500"
+        onClick={() => openDialog()}
+      >
+        <Icon ios={<TbUserPlus className="w-7 h-7" />} material={<TbUserPlus className="w-6 h-6" />} />
+      </Link>
+    </>
+  );
 };
-
-interface FormProps {
-	firstFieldRef: React.RefObject<any>;
-	onClose;
-}
-
-interface TopicProps {
-	topicName: string;
-	topicMembers: string[];
-}
 
 // TODO(#2)
 const fakeMembers = [
-	{
-		"userId": "fake",
-		"username": "fake"
-	},
-	{
-		"userId": "postman",
-		"username": "postman"
-	}
+  {
+    userId: "fake",
+    username: "fake",
+  },
+  {
+    userId: "postman",
+    username: "postman",
+  },
 ];
 
-const SubmitForm = ({ firstFieldRef, onClose }: FormProps) => {
-	const [submittable, setSubmittable] = useState(false);
+const SubmitForm: React.FC<CreatableMembersProps> = ({ topicId, mutateTopic }) => {
+  const { defaultUser: user } = useUser();
 
-	const [addUsers, setAddUsers] = useState<string[]>([]);
+  const dispatch = useAppDispatch();
 
-	const [topicForm, setTopicForm] = useState<TopicProps>({
-		topicName: "",
-		topicMembers: []
-	});
+  const [submittable, setSubmittable] = useState(false);
 
-	const { trigger } = useSWRMutation("/api/topics/add_member", post, {});
+  const [members, setMembers] = useState<Member[]>([]);
 
-	const handleCheckboxState = (checked, userId) => {
-		if (checked) {
-			setAddUsers([...addUsers, userId]);
-			handleChange();
-		} else {
+  useEffect(() => {
+    handleChange();
+  }, [members]);
 
-		}
-	};
+  const handleCheckboxState = (checked: boolean, member: Member) => {
+    if (checked) {
+      setMembers([...members, member]);
+    } else {
+      setMembers(members.filter((m) => m.userId !== member.userId));
+    }
+  };
 
-	const handleChange = () => {
-		if (addUsers.length > 0) {
-			setSubmittable(true);
-		} else {
-			setSubmittable(false);
-		}
+  const handleChange = () => {
+    if (members.length > 0) {
+      setSubmittable(true);
+    } else {
+      setSubmittable(false);
+    }
+  };
 
+  const submitTopic = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    event.preventDefault();
 
-		// setTopicForm((prop) => ({
-		// 	...prop,
-		// 	topicName: event.target.value
-		// }));
-	};
+    addMembersApi(members, topicId, user).then(() => {
+      mutateTopic(true);
+    });
 
-	const submitTopic = () => {
-		event.preventDefault();
+    setMembers([]);
 
-		console.log(addUsers);
+    // Close Popover
+    dispatch(resetDialog());
+  };
 
-		trigger(topicForm);
+  return (
+    <div className="pl-6 mt-1 space-y-1">
+      <List>
+        {fakeMembers.map((item) => (
+          <ListItem key={item.userId}>
+            <label htmlFor={item.userId} className="inline-flex items-center">
+              <input
+                type="checkbox"
+                id={item.userId}
+                onChange={(e) => {
+                  handleCheckboxState(e.target.checked, item);
+                }}
+                className="form-checkbox h-4 w-4 transition duration-150 ease-in-out"
+              />
+              <span className="ml-2">{item.username}</span>
+            </label>
+          </ListItem>
+        ))}
+      </List>
 
-		setTopicForm({ topicName: "", topicMembers: [] });
-
-		// Close Popover
-		onClose();
-	};
-
-	return (
-		<Stack pl={6} mt={1} spacing={1}>
-
-			<List ref={firstFieldRef}>
-				{fakeMembers.map((item) => (
-					<ListItem key={item.userId}>
-						<Checkbox id={item.userId}
-								  onChange={(e) => {
-									  handleCheckboxState(e.target.checked, item.userId);
-								  }}
-						>{item.username}</Checkbox>
-					</ListItem>
-				))}
-			</List>
-
-
-			<Flex justify="center" className="p-4">
-				<ButtonGroup display="flex" justifyContent="flex-end">
-					<Button
-						isDisabled={!submittable}
-						onClick={submitTopic}
-						className={`bg-indigo-600 text-${useColorModeValue(
-							colors.light.text,
-							colors.dark.text
-						)} hover:bg-indigo-700`}
-					>
-						Add
-					</Button>
-				</ButtonGroup>
-			</Flex>
-		</Stack>
-	);
+      <div className="flex justify-center p-4">
+        <div className="flex justify-end">
+          <Button disabled={!submittable} onClick={submitTopic} className=" px-4 py-2 rounded-md font-semibold">
+            Add
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
 };
